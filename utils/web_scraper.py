@@ -1,6 +1,7 @@
 import requests
 from datetime import datetime
 from urllib.parse import urlparse
+from zipfile import ZipFile
 
 
 class web_scaper():

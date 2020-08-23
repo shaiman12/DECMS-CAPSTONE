@@ -1,7 +1,8 @@
-from flask import Flask, render_template, url_for, request, flash, send_file
+from flask import Flask, render_template, url_for, request, flash, send_file, redirect
 from utils.web_scraper import web_scaper
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = "b5121df8bab03d4d38d2ebf2c08eebad"
 
 
 @app.route('/')
@@ -11,16 +12,18 @@ def home():
 
 @app.route('/scrape', methods=["GET", "POST"])
 def scrape():
+    url = request.args.get('url')
+
     try:
-        url = request.args.get('url')
         scraper = web_scaper(url)
         created_file = scraper.create_html_file(url)
-
-        return send_file(created_file, as_attachment=True)
+        send_file(created_file, as_attachment=True)
 
     except:
-        return 'Did not work...'
-        # flash(f'Failed to get page - did you leave out the "https://?"', 'danger')
+        flash(f'Failed to download a snapshot of {url}', 'danger')
+
+    finally:
+        return redirect(url_for('home'))
 
 
 if __name__ == '__main__':

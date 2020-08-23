@@ -1,0 +1,16 @@
+{% extends "layout.html" %} {% block content %}
+<div>
+  <h1>CMS Snapshot</h1>
+  <p>Save this website to your computer</p>
+</div>
+
+<form action="/scrape">
+  <div class="form-group">
+    <label for="url">Enter your url:</label><br />
+    <input type="text" id="url" name="url" placeholder="https://yoursite.com" />
+  </div>
+
+  <button type="submit" class="btn btn-primary">Save Website</button>
+</form>
+
+{% endblock %}

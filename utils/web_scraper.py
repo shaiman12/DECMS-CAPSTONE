@@ -2,6 +2,7 @@ import requests
 from datetime import datetime
 from urllib.parse import urlparse
 from zipfile import ZipFile
+from utils.HTML_Localizer import HTML_Localizer
 
 
 class web_scaper():
@@ -13,6 +14,10 @@ class web_scaper():
 
     def create_html_file(self, url):
         response = requests.get(url)
+        #------------------------------------------------------------------------------------#
+        localizeContent = HTML_Localizer(url)
+        localizeContent.extract_css()
+        #------------------------------------------------------------------------------------#
         now = datetime.now().strftime("%m/%d/%Y-%H:%M:%S").replace('/', '-')
         filename = self.base_path+'-'+now+".html"
         f = open(filename, "w")

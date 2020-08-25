@@ -18,9 +18,10 @@ class HTML_Localizer:
         css_files = []
         for css in self.htmlSoup.find_all("link"):
             if css.attrs.get("href"):
-                css_url = urljoin(url, css.attrs.get("href"))
+                css_url = urljoin(self.url, css.attrs.get("href"))
                 css_files.append(css_url)
         
         with open("css_files.txt", "w") as f:
             for css_file in css_files:
                 print(css_file, file=f)
+

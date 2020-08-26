@@ -1,1 +1,4 @@
-https://fonts.googleapis.com/css?family=Noto+Sans%3A400italic%2C700italic%2C400%2C700%7CNoto+Serif%3A400italic%2C700italic%2C400%2C700%7CInconsolata%3A400%2C700&subset=latin%2Clatin-ext
+https://cloud.typography.com/7527714/7615372/css/fonts.css
+https://www.obama.org/wp-content/themes/obamafoundation/style.css?v=112
+https://www.obama.org/wp-includes/css/dist/block-library/style.min.css?ver=5.3
+https://www.obama.org/wp-content/plugins/uk-cookie-consent/assets/css/style.css?ver=5.3

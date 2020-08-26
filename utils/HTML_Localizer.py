@@ -49,10 +49,10 @@ class HTML_Localizer:
             except:
                 pass
             links.append(imageurl)
-            return links
+        return links
 
     def download_img(self, image_url):
-        filename = image_url.split("/")[-1]
+        filename = "imgs/"+image_url.split("/")[-1]
         r = requests.get(image_url, stream=True)
         if r.status_code == 200:
             r.raw.decode_content = True

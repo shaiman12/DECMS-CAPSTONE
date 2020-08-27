@@ -1,4 +1,5 @@
 import requests
+import os
 from bs4 import BeautifulSoup as bSoup
 from urllib.parse import urljoin, urlparse
 import os
@@ -28,10 +29,23 @@ class HTML_Localizer:
             if css.attrs.get("href"):
                 css_url = urljoin(self.url, css.attrs.get("href"))
                 css_files.append(css_url)
+<<<<<<< HEAD
 
         with open("css_files.txt", "w") as f:
             for css_file in css_files:
                 print(css_file, file=f)
+=======
+        
+        count = 0 
+        for css_file_name in css_files:
+            fileContent = requests.get(css_file_name)
+            completFilename = "css/staticStyling" + str(count) + ".css"
+            f = open(completFilename, "w")
+            f.write(fileContent.text)
+            f.close
+            count = count +1 
+        
+>>>>>>> 49cf94a... Css extractor now saves each css file locally as opposed to just collating the url's in a text file
 
     def get_image_list(self, url):
         """Returns a list of all links of images from a URL"""

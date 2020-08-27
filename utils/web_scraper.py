@@ -28,5 +28,5 @@ class web_scaper():
         f = open(filename, "w")
         f.write(response.text)
         self.created_files.append(filename)
-
+        localizeContent.replaceImg(filename)
         return filename

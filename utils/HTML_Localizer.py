@@ -2,9 +2,7 @@ import requests
 from bs4 import BeautifulSoup as bSoup
 from urllib.parse import urljoin, urlparse
 import os
-from tqdm import tqdm
 import shutil
-from requests_html import HTMLSession
 
 
 class HTML_Localizer:
@@ -15,6 +13,7 @@ class HTML_Localizer:
     def __init__(self, url):
         self.url = url
         self.imgPath = "imgs"
+        self.imagelinklist = []
         self.htmlSoup = bSoup(
             requests.Session().get(url).content, "html.parser")
 
@@ -58,3 +57,24 @@ class HTML_Localizer:
             r.raw.decode_content = True
             with open(filename, 'wb') as f:
                 shutil.copyfileobj(r.raw, f)
+
+    def replaceImg(self, htmlfilename):
+        downloadedImages = os.listdir("imgs/")
+        with open(htmlfilename) as fp:
+            newsoup = bSoup(fp, "lxml")
+        for image in newsoup.find_all("img"):
+
+            imageLink = image.attrs.get("src")
+            if not imageLink:
+                continue
+            dissasembled = urlparse(imageLink)
+            filename, file_ext = os.path.splitext(
+                os.path.basename(dissasembled.path))
+            imagePart = filename+file_ext
+            pos = downloadedImages.index(imagePart)
+            if(pos > -1):
+                image["src"] = "imgs/"+downloadedImages[pos]
+        fp.close()
+        html = newsoup.prettify("utf-8")
+        with open(htmlfilename, "wb") as file:
+            file.write(html)

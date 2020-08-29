@@ -3,6 +3,7 @@ from datetime import datetime
 from urllib.parse import urlparse, urljoin
 from zipfile import ZipFile
 from utils.HTML_Localizer import HTML_Localizer
+from bs4 import BeautifulSoup as bSoup
 
 
 class web_scaper():
@@ -13,20 +14,29 @@ class web_scaper():
         self.base_path = urlparse(url).hostname
         self.imgPath = "imgs"
 
+    """ Method creates and saves the html file(s) from a given url """
     def create_html_file(self, url):
+        # Variables are created to get the content from a url and create the html soup using the beautiful soup parser
         response = requests.get(url)
-        #------------------------------------------------------------------------------------#
-        localizeContent = HTML_Localizer(url)
+        htmlSoup = bSoup(requests.Session().get(url).content, "html.parser")
+
+        # Creates a variable called HTML_Localizer to locally save both the css files and images and perform inline 
+        # editting of the html soup. 
+        localizeContent = HTML_Localizer(url, htmlSoup)
         localizeContent.extract_css()
-        imagelist = localizeContent.get_image_list(url)
+        imagelist = localizeContent.get_image_list()
         for img in imagelist:
             localizeContent.download_img(img)
+        localizeContent.replaceImg()
 
-        #------------------------------------------------------------------------------------#
+        # Renames the html file to include the date
         now = datetime.now().strftime("%m/%d/%Y-%H:%M:%S").replace('/', '-')
         filename = self.base_path+'-'+now+".html"
-        f = open(filename, "w")
-        f.write(response.text)
+       
+       # The HTML soup is converted into a local html file 
+        html = htmlSoup.prettify("utf-8")
+        with open(filename, "wb") as file:
+            file.write(html)
+
         self.created_files.append(filename)
-        localizeContent.replaceImg(filename)
         return filename

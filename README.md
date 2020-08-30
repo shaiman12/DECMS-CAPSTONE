@@ -4,7 +4,7 @@
 
 ## Requirements
 
-# run `pip3 install requirements.txt`
+# run `pip3 install requirements.txt` (or just make sure you have flask and beautiful soup for now)
 
 ## Running the app
 

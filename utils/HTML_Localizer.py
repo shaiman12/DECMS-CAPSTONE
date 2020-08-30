@@ -23,26 +23,31 @@ class HTML_Localizer:
     """
 
     def extract_css(self):
-        count = 0 
+        count = 0
+        print('Extracting css...')
         for css in self.htmlSoup.find_all(type='text/css'):
             if css.attrs.get("href"):
-                #makes url complete and requests the data
+                # makes url complete and requests the data
                 css_url = urljoin(self.url, css.attrs.get("href"))
 
                 fileContent = requests.get(css_url)
 
-                #renames the url in the html Soup
+                # renames the url in the html Soup
                 css['href'] = "css/Static_Styling_" + str(count) + ".css"
 
-                #saves the css file locally
+                # saves the css file locally
                 f = open(css['href'], "w")
                 f.write(fileContent.text)
                 f.close
                 count = count + 1
-        
+        print(f'Successfully extracted {count} css files...')
+
     """ Returns a list of all links of images from a URL"""
+
     def get_image_list(self):
         links = []
+        print('Getting list of images...')
+
         for image in self.htmlSoup.find_all("img"):
             imageurl = image.attrs.get("src")
             if not imageurl:
@@ -58,7 +63,9 @@ class HTML_Localizer:
         return links
 
     """ Receives a list of image urls and downloads them locally  """
+
     def download_img(self, image_url):
+
         filename = "imgs/"+image_url.split("/")[-1]
         r = requests.get(image_url, stream=True)
         if r.status_code == 200:
@@ -67,9 +74,10 @@ class HTML_Localizer:
                 shutil.copyfileobj(r.raw, f)
 
     """ Using the html soup, this method replaces the old image url with the new locally saved version """
+
     def replaceImg(self):
         downloadedImages = os.listdir("imgs/")
-        
+
         for image in self.htmlSoup.find_all("img"):
 
             imageLink = image.attrs.get("src")
@@ -82,4 +90,3 @@ class HTML_Localizer:
             pos = downloadedImages.index(imagePart)
             if(pos > -1):
                 image["src"] = "imgs/"+downloadedImages[pos]
-

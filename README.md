@@ -6,6 +6,8 @@
 
 # run `pip3 install requirements.txt`
 
+# a folder that exists called 'imgs' and 'css'
+
 ## Running the app
 
 # run `python3 app.py` and check `localhost:5000`

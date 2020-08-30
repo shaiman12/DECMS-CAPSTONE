@@ -19,48 +19,27 @@ class HTML_Localizer:
             requests.Session().get(url).content, "html.parser")
 
     """
-<<<<<<< HEAD
-    method traverses soup for for link tags and finds those css hrefs. Adds these links to an array and saves them to file
-    Need to test to see if I need to save the actual file content for localizing.
-=======
     Method traverses soup for for link tags and finds those css hrefs. It adds these links to an array and then creates and saves
     the contents of the files locally in a folder. 
->>>>>>> 9833ff4... Extractor class has been refactored
     """
 
     def extract_css(self):
-        count = 0 
+        count = 0
         for css in self.htmlSoup.find_all(type='text/css'):
             if css.attrs.get("href"):
-                #makes url complete and requests the data
+                # makes url complete and requests the data
                 css_url = urljoin(self.url, css.attrs.get("href"))
-<<<<<<< HEAD
                 css_files.append(css_url)
-<<<<<<< HEAD
-
-        with open("css_files.txt", "w") as f:
-            for css_file in css_files:
-                print(css_file, file=f)
-=======
-=======
                 fileContent = requests.get(css_url)
 
-                #renames the url in the html Soup
+                # renames the url in the html Soup
                 css['href'] = "css/staticStyling" + str(count) + ".css"
 
-                #saves the css file locally
+                # saves the css file locally
                 f = open(css['href'], "w")
                 f.write(fileContent.text)
                 f.close
                 count = count + 1
->>>>>>> 9833ff4... Extractor class has been refactored
-        
-
-        
-    
-             
-        
->>>>>>> 49cf94a... Css extractor now saves each css file locally as opposed to just collating the url's in a text file
 
     def get_image_list(self, url):
         """Returns a list of all links of images from a URL"""

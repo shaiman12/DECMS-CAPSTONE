@@ -6,6 +6,8 @@
 
 # run `pip3 install requirements.txt` (or just make sure you have flask and beautiful soup for now)
 
+# a folder that exists called 'imgs' and 'css'
+
 ## Running the app
 
 # run `python3 app.py` and check `localhost:5000`

@@ -26,12 +26,19 @@ class web_scaper():
         localizeContent = HTML_Localizer(url, htmlSoup)
         localizeContent.extract_css()
         imagelist = localizeContent.get_image_list()
+        videolist = localizeContent.get_video_list()
         print('Downloading images...')
         for img in imagelist:
-            localizeContent.download_img(img)
+            localizeContent.download_media(img)
+        print('Downloading videos...')
+        for video in videolist:
+            localizeContent.download_media(video)
+
         print('Successfully downloaded images...')
         print('Renaming remote image paths to local paths...')
         localizeContent.replaceImg()
+        print('Renaming remote video paths to local paths...')
+        localizeContent.replaceVideos()
         print('Done')
 
         # Renames the html file to include the date

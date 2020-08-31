@@ -19,7 +19,7 @@ class HTML_Localizer:
 
     """
     Method traverses soup for for link tags and finds those with css hrefs. It adds these links to an array and then creates and saves
-    the contents of the files locally in a folder. 
+    the contents of the files locally in a folder.
     """
 
     def extract_css(self):
@@ -62,12 +62,30 @@ class HTML_Localizer:
             links.append(imageurl)
         return links
 
+    def get_video_list(self):
+        links = []
+        print('Getting list of videos...')
+
+        for video in self.htmlSoup.find_all('source', type='video/mp4'):
+            videourl = video.attrs.get("src")
+            if not videourl:
+                continue
+            videourl = urljoin(self.url, videourl)
+            try:
+                # removing "?" from imgs
+                x = videourl.index("?")
+                videourl = videourl[:x]
+            except:
+                pass
+            links.append(videourl)
+        return links
+
     """ Receives a list of image urls and downloads them locally  """
 
-    def download_img(self, image_url):
+    def download_media(self, media_url):
 
-        filename = "imgs/"+image_url.split("/")[-1]
-        r = requests.get(image_url, stream=True)
+        filename = "media/"+media_url.split("/")[-1]
+        r = requests.get(media_url, stream=True)
         if r.status_code == 200:
             r.raw.decode_content = True
             with open(filename, 'wb') as f:
@@ -76,7 +94,7 @@ class HTML_Localizer:
     """ Using the html soup, this method replaces the old image url with the new locally saved version """
 
     def replaceImg(self):
-        downloadedImages = os.listdir("imgs/")
+        downloadedImages = os.listdir("media/")
 
         for image in self.htmlSoup.find_all("img"):
 
@@ -89,4 +107,20 @@ class HTML_Localizer:
             imagePart = filename+file_ext
             pos = downloadedImages.index(imagePart)
             if(pos > -1):
-                image["src"] = "imgs/"+downloadedImages[pos]
+                image["src"] = "media/"+downloadedImages[pos]
+
+    def replaceVideos(self):
+        downloadedVideos = os.listdir("media/")
+
+        for video in self.htmlSoup.find_all('source', type='video/mp4'):
+
+            videoLink = video.attrs.get("src")
+            if not videoLink:
+                continue
+            dissasembled = urlparse(videoLink)
+            filename, file_ext = os.path.splitext(
+                os.path.basename(dissasembled.path))
+            videoPart = filename+file_ext
+            pos = downloadedVideos.index(videoPart)
+            if(pos > -1):
+                video["src"] = "media/"+downloadedVideos[pos]

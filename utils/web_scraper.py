@@ -14,6 +14,7 @@ class web_scaper():
         self.base_path = urlparse(url).hostname
         self.imgPath = "imgs"
     
+    """ Method searches through link tags with urls. If the a url contains 'wp-conent' the loop breaks and returns true"""
     def wordPressDetector(self, soup):
         wordPress = False
         
@@ -35,7 +36,7 @@ class web_scaper():
         #Checks to see if website was built in wordPress
         cmsDetector = self.wordPressDetector(htmlSoup)
         if(cmsDetector):
-            print("WordPress!")
+            print("This website was built in wordPress!")
         else:
             print("This isn't build in WordPress!")
 

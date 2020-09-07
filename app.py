@@ -19,8 +19,8 @@ def scrape():
         created_file = scraper.create_html_file(url)
         send_file(created_file, as_attachment=True)
 
-    except:
-        flash(f'Failed to download a snapshot of {url}', 'danger')
+    except Exception as e:
+        flash(str(e), 'danger')
 
     finally:
         return redirect(url_for('home'))

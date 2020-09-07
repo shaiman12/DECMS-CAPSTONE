@@ -47,19 +47,10 @@ class HTML_Localizer:
     def get_image_list(self):
         links = []
         print('Getting list of images...')
-
         for image in self.htmlSoup.find_all("img"):
-            imageurl = image.attrs.get("src")
-            if not imageurl:
-                continue
-            imageurl = urljoin(self.url, imageurl)
-            try:
-                # removing "?" from imgs
-                x = imageurl.index("?")
-                imageurl = imageurl[:x]
-            except:
-                pass
-            links.append(imageurl)
+            print(image)
+            print("----------")
+            links.append(self.link_maker(image))
         return links
 
     def get_video_list(self):
@@ -67,17 +58,31 @@ class HTML_Localizer:
         print('Getting list of videos...')
 
         for video in self.htmlSoup.find_all('source', type='video/mp4'):
-            videourl = video.attrs.get("src")
-            if not videourl:
-                continue
-            videourl = urljoin(self.url, videourl)
-            try:
-                # removing "?" from imgs
-                x = videourl.index("?")
-                videourl = videourl[:x]
-            except:
-                pass
-            links.append(videourl)
+            links.append(self.link_maker(video))
+        for video in self.htmlSoup.find_all('source', type='video/mp4'):
+            links.append(self.link_maker(video))
+        return links
+
+    def link_maker(self, mediaItem):
+        mediaurl = mediaItem.attrs.get("src")
+        mediaurl = urljoin(self.url, mediaurl)
+        try:
+            # removing "?" from imgs
+            x = mediaurl.index("?")
+            mediaurl = mediaurl[:x]
+        except:
+            pass
+        return mediaurl
+
+    def get_audio_list(self):
+        links = []
+        print('Getting list of videos...')
+
+        for audio in self.htmlSoup.find_all('source', type='audio/ogg'):
+            links.append(self.link_maker(audio))
+        for audio in self.htmlSoup.find_all('source', type='audio/mpeg'):
+            links.append(self.link_maker(audio))
+
         return links
 
     """ Receives a list of image urls and downloads them locally  """
@@ -94,20 +99,19 @@ class HTML_Localizer:
     """ Using the html soup, this method replaces the old image url with the new locally saved version """
 
     def replaceImg(self):
-        downloadedImages = os.listdir("media/")
-
         for image in self.htmlSoup.find_all("img"):
+            self.replaceMedia(image)
 
-            imageLink = image.attrs.get("src")
-            if not imageLink:
-                continue
-            dissasembled = urlparse(imageLink)
-            filename, file_ext = os.path.splitext(
-                os.path.basename(dissasembled.path))
-            imagePart = filename+file_ext
-            pos = downloadedImages.index(imagePart)
-            if(pos > -1):
-                image["src"] = "media/"+downloadedImages[pos]
+    def replaceMedia(self, media):
+        downloadedMedia = os.listdir("media/")
+        mediaLink = media.attrs.get("src")
+        dissasembled = urlparse(mediaLink)
+        filename, file_ext = os.path.splitext(
+            os.path.basename(dissasembled.path))
+        mediaPart = filename+file_ext
+        pos = downloadedMedia.index(mediaPart)
+        if(pos > -1):
+            media["src"] = "media/"+downloadedMedia[pos]
 
     def replaceVideos(self):
         downloadedVideos = os.listdir("media/")
@@ -124,3 +128,31 @@ class HTML_Localizer:
             pos = downloadedVideos.index(videoPart)
             if(pos > -1):
                 video["src"] = "media/"+downloadedVideos[pos]
+
+    def replaceAudio(self):
+        downloadedMedia = os.listdir("media/")
+
+        for audio in self.htmlSoup.find_all('source', type='audio/ogg'):
+
+            audioLink = audio.attrs.get("src")
+            if not audioLink:
+                continue
+            dissasembled = urlparse(audioLink)
+            filename, file_ext = os.path.splitext(
+                os.path.basename(dissasembled.path))
+            audioPart = filename+file_ext
+            pos = downloadedMedia.index(audioPart)
+            if(pos > -1):
+                audio["src"] = "media/"+downloadedMedia[pos]
+        for audio in self.htmlSoup.find_all('source', type='audio/mpeg'):
+
+            audioLink = audio.attrs.get("src")
+            if not audioLink:
+                continue
+            dissasembled = urlparse(audioLink)
+            filename, file_ext = os.path.splitext(
+                os.path.basename(dissasembled.path))
+            audioPart = filename+file_ext
+            pos = downloadedMedia.index(audioPart)
+            if(pos > -1):
+                audio["src"] = "media/"+downloadedMedia[pos]

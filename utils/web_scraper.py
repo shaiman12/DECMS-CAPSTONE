@@ -27,18 +27,24 @@ class web_scaper():
         localizeContent.extract_css()
         imagelist = localizeContent.get_image_list()
         videolist = localizeContent.get_video_list()
+        audioList = localizeContent.get_audio_list()
         print('Downloading images...')
         for img in imagelist:
             localizeContent.download_media(img)
         print('Downloading videos...')
         for video in videolist:
             localizeContent.download_media(video)
+        print("Downloading Audio files....")
+        for audio in audioList:
+            localizeContent.download_media(audio)
 
         print('Successfully downloaded images...')
         print('Renaming remote image paths to local paths...')
         localizeContent.replaceImg()
         print('Renaming remote video paths to local paths...')
         localizeContent.replaceVideos()
+        print('Renaming remote audio paths to local paths...')
+        localizeContent.replaceAudio()
         print('Done')
 
         # Renames the html file to include the date

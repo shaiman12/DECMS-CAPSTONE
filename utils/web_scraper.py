@@ -13,13 +13,32 @@ class web_scaper():
     def __init__(self, url):
         self.base_path = urlparse(url).hostname
         self.imgPath = "imgs"
+    
+    """ Method searches through link tags with urls. If the a url contains 'wp-conent' the loop breaks and returns true"""
+    def wordPressDetector(self, soup):
+        wordPress = False
+        
+        for wp in soup.find_all('link', href=True):
+            url = wp.attrs.get("href")
+            if url.find("wp-content") != -1:
+                wordPress = True
+                break
+        
+        return wordPress
+    
 
     """ Method creates and saves the html file(s) from a given url """
-
     def create_html_file(self, url):
         # Variables are created to get the content from a url and create the html soup using the beautiful soup parser
         response = requests.get(url)
         htmlSoup = bSoup(requests.Session().get(url).content, "html.parser")
+
+        #Checks to see if website was built in wordPress
+        cmsDetector = self.wordPressDetector(htmlSoup)
+        if(cmsDetector):
+            print("This website was built in wordPress!")
+        else:
+            print("This isn't build in WordPress!")
 
         # Creates a variable called HTML_Localizer to locally save both the css files and images and perform inline
         # editting of the html soup.
@@ -44,3 +63,4 @@ class web_scaper():
 
         self.created_files.append(filename)
         return filename
+    

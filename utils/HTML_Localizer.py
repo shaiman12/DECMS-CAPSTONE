@@ -114,20 +114,8 @@ class HTML_Localizer:
             media["src"] = "media/"+downloadedMedia[pos]
 
     def replaceVideos(self):
-        downloadedVideos = os.listdir("media/")
-
         for video in self.htmlSoup.find_all('source', type='video/mp4'):
-
-            videoLink = video.attrs.get("src")
-            if not videoLink:
-                continue
-            dissasembled = urlparse(videoLink)
-            filename, file_ext = os.path.splitext(
-                os.path.basename(dissasembled.path))
-            videoPart = filename+file_ext
-            pos = downloadedVideos.index(videoPart)
-            if(pos > -1):
-                video["src"] = "media/"+downloadedVideos[pos]
+            self.replaceMedia(video)
 
     def replaceAudio(self):
         downloadedMedia = os.listdir("media/")

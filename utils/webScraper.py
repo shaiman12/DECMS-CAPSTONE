@@ -2,19 +2,23 @@ import requests
 from datetime import datetime
 from urllib.parse import urlparse, urljoin
 from zipfile import ZipFile
-from utils.HTML_Localizer import HTML_Localizer
 from bs4 import BeautifulSoup as bSoup
+from utils.htmlLocalizer import htmlLocalizer
 
 
-class web_scaper():
-    base_path = ''
-    created_files = []
+class webScaper():
+    basePath = ''
+    createdFiles = []
 
     def __init__(self, url):
-        self.base_path = urlparse(url).hostname
+        self.url = url
+        self.basePath = urlparse(url).hostname
         self.imgPath = "imgs"
     
-    """ Method searches through link tags with urls. If the a url contains 'wp-conent' the loop breaks and returns true"""
+    """ 
+    Returns boolean. True if a wordPress website, False if not. 
+    Method searches through link tags with urls. If the a url contains 'wp-conent' the loop breaks and returns true
+    """
     def wordPressDetector(self, soup):
         wordPress = False
         
@@ -27,11 +31,13 @@ class web_scaper():
         return wordPress
     
 
-    """ Method creates and saves the html file(s) from a given url """
-    def create_html_file(self, url):
+    """ 
+    Method creates and saves the html file(s) from a given url.  
+    """
+    def createHtmlFile(self):
         # Variables are created to get the content from a url and create the html soup using the beautiful soup parser
-        response = requests.get(url)
-        htmlSoup = bSoup(requests.Session().get(url).content, "html.parser")
+        response = requests.get(self.url)
+        htmlSoup = bSoup(requests.Session().get(self.url).content, "html.parser")
 
         #Checks to see if website was built in wordPress
         cmsDetector = self.wordPressDetector(htmlSoup)
@@ -42,12 +48,12 @@ class web_scaper():
 
         # Creates a variable called HTML_Localizer to locally save both the css files and images and perform inline
         # editting of the html soup.
-        localizeContent = HTML_Localizer(url, htmlSoup)
-        localizeContent.extract_css()
-        imagelist = localizeContent.get_image_list()
+        localizeContent = htmlLocalizer(self.url, htmlSoup)
+        localizeContent.downloadCSS()
+        imagelist = localizeContent.getImageList()
         print('Downloading images...')
         for img in imagelist:
-            localizeContent.download_img(img)
+            localizeContent.downloadImg(img)
         print('Successfully downloaded images...')
         print('Renaming remote image paths to local paths...')
         localizeContent.replaceImg()
@@ -55,12 +61,12 @@ class web_scaper():
 
         # Renames the html file to include the date
         now = datetime.now().strftime("%m/%d/%Y-%H:%M:%S").replace('/', '-')
-        filename = self.base_path+'-'+now+".html"
+        filename = self.basePath+'-'+now+".html"
        # The HTML soup is converted into a local html file
         html = htmlSoup.prettify("utf-8")
         with open(filename, "wb") as file:
             file.write(html)
 
-        self.created_files.append(filename)
+        self.createdFiles.append(filename)
         return filename
     

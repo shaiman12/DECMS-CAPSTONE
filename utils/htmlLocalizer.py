@@ -6,7 +6,7 @@ import os
 import shutil
 
 
-class HTML_Localizer:
+class htmlLocalizer:
     """
     For prototype, Localizer receives the url and html soup from the web_scrapper
     """
@@ -22,15 +22,15 @@ class HTML_Localizer:
     the contents of the files locally in a folder. 
     """
 
-    def extract_css(self):
+    def downloadCSS(self):
         count = 0
         print('Extracting css...')
         for css in self.htmlSoup.find_all(type='text/css'):
             if css.attrs.get("href"):
                 # makes url complete and requests the data
-                css_url = urljoin(self.url, css.attrs.get("href"))
+                cssUrl = urljoin(self.url, css.attrs.get("href"))
 
-                fileContent = requests.get(css_url)
+                fileContent = requests.get(cssUrl)
 
                 # renames the url in the html Soup
                 css['href'] = "css/Static_Styling_" + str(count) + ".css"
@@ -44,7 +44,7 @@ class HTML_Localizer:
 
     """ Returns a list of all links of images from a URL"""
 
-    def get_image_list(self):
+    def getImageList(self):
         links = []
         print('Getting list of images...')
 
@@ -64,7 +64,7 @@ class HTML_Localizer:
 
     """ Receives a list of image urls and downloads them locally  """
 
-    def download_img(self, image_url):
+    def downloadImg(self, image_url):
 
         filename = "imgs/"+image_url.split("/")[-1]
         r = requests.get(image_url, stream=True)

@@ -1,5 +1,5 @@
 from flask import Flask, render_template, url_for, request, flash, send_file, redirect
-from utils.web_scraper import web_scaper
+from utils.webScraper import webScaper
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "b5121df8bab03d4d38d2ebf2c08eebad"
@@ -15,12 +15,13 @@ def scrape():
     url = request.args.get('url')
 
     try:
-        scraper = web_scaper(url)
-        created_file = scraper.create_html_file(url)
-        send_file(created_file, as_attachment=True)
+        scraper = webScaper(url)
+        createdFile = scraper.createHtmlFile()
+        send_file(createdFile, as_attachment=True)
 
-    except:
+    except Exception as e:
         flash(f'Failed to download a snapshot of {url}', 'danger')
+        print(e)
 
     finally:
         return redirect(url_for('home'))

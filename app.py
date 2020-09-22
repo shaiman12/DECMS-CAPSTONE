@@ -1,5 +1,5 @@
 from flask import Flask, render_template, url_for, request, flash, send_file, redirect
-from utils.webScraper import webScaper
+from webScraper import webScaper
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "b5121df8bab03d4d38d2ebf2c08eebad"

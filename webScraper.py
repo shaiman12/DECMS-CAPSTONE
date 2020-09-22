@@ -3,8 +3,7 @@ from datetime import datetime
 from urllib.parse import urlparse, urljoin
 from zipfile import ZipFile
 from bs4 import BeautifulSoup as bSoup
-from utils.htmlLocalizer import htmlLocalizer
-
+from htmlLocalizer import htmlLocalizer
 
 class webScaper():
     basePath = ''

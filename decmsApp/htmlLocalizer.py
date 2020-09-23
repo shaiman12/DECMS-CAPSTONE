@@ -2,16 +2,19 @@ import requests
 import os
 from bs4 import BeautifulSoup as bSoup
 from urllib.parse import urljoin, urlparse
-import os
 import shutil
 
 
 class htmlLocalizer:
     """
-    For prototype, Localizer receives the url and html soup from the web_scrapper
+    Class receives the url and html soup from the webScraper. Contains methods to locate, download, and inline edit the css files and
+    embeded object links from the html soup. 
     """
 
     def __init__(self, url, htmlSoup):
+        """
+        Constructor class. 
+        """
         self.url = url
         self.imgPath = "imgs"
         self.imagelinklist = []
@@ -25,20 +28,22 @@ class htmlLocalizer:
         """
         count = 0
         print('Extracting css...')
-        for css in self.htmlSoup.find_all(type='text/css'):
-            if css.attrs.get("href"):
-                # makes url complete and requests the data
-                cssUrl = urljoin(self.url, css.attrs.get("href"))
+        for cssFile in self.htmlSoup.find_all("link"):
+            if cssFile.attrs.get("href") and '.css' in cssFile['href']:
+                
+                completeCssUrl = urljoin(self.url, cssFile.attrs.get("href"))
+                fileContent = requests.get(completeCssUrl)
 
-                fileContent = requests.get(cssUrl)
+                # Renames the url in the html Soup
+                newFileName = "css/Static_Styling_" + str(count) + ".css"
+                cssFile['href'] = newFileName
 
-                # renames the url in the html Soup
-                css['href'] = "css/Static_Styling_" + str(count) + ".css"
+                ########### This creates a new file directory from scratch. #########
+                os.makedirs(os.path.dirname(newFileName), exist_ok=True)
 
-                # saves the css file locally
-                f = open(css['href'], "w")
-                f.write(fileContent.text)
-                f.close
+                localCSSFile = open(cssFile['href'], "w")
+                localCSSFile.write(fileContent.text)
+                localCSSFile.close
                 count = count + 1
         print(f'Successfully extracted {count} css files...')
 

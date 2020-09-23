@@ -6,50 +6,49 @@ from bs4 import BeautifulSoup as bSoup
 from decmsApp.htmlLocalizer import htmlLocalizer
 
 class webScraper():
+    """
+    To be Updated fully.
+    Class receives url from the flask application. It creates the HTML soup and *runs recurvisely method that downlaods 
+    each html file and its contents in given file tree.  
+    """
     basePath = ''
     createdFiles = []
 
     def __init__(self, url):
+        """
+        Constructor class. Creates url and base path variables. 
+        """
         self.url = url
         self.basePath = urlparse(url).hostname
-        self.imgPath = "imgs"
     
-
-    """ 
-    Method creates and saves the html file(s) from a given url.  
-    """
     def createHtmlFile(self):
-        # Variables are created to get the content from a url and create the html soup using the beautiful soup parser
-        response = requests.get(self.url)
+        """ 
+         Method creates the html soup from the given url. 
+         It creates an instance of the hmtlLocalizer variable and invokes its methods to download the css and object links. It updates
+         the html text and outputs a local html file. 
+        """
+
         htmlSoup = bSoup(requests.Session().get(self.url).content, "html.parser")
 
-        #Checks to see if website was built in wordPress
-        cmsDetector = self.wordPressDetector(htmlSoup)
-        if(cmsDetector):
-            print("This website was built in wordPress!")
-        else:
-            print("This isn't build in WordPress!")
-
-        # Creates a variable called HTML_Localizer to locally save both the css files and images and perform inline
-        # editting of the html soup.
         localizeContent = htmlLocalizer(self.url, htmlSoup)
         localizeContent.downloadCSS()
         imagelist = localizeContent.getImageList()
         print('Downloading images...')
         for img in imagelist:
             localizeContent.downloadImg(img)
+
         print('Successfully downloaded images...')
         print('Renaming remote image paths to local paths...')
         localizeContent.replaceImg()
         print('Done')
 
-        # Renames the html file to include the date
-        now = datetime.now().strftime("%m/%d/%Y-%H:%M:%S").replace('/', '-')
-        filename = self.basePath+'-'+now+".html"
-       # The HTML soup is converted into a local html file
-        html = htmlSoup.prettify("utf-8")
+        
+        currentDateTime = datetime.now().strftime("%m/%d/%Y-%H:%M:%S").replace('/', '-')
+        filename = self.basePath+'-'+currentDateTime+".html"
+       
+        localHtmlFile = htmlSoup.prettify("utf-8")
         with open(filename, "wb") as file:
-            file.write(html)
+            file.write(localHtmlFile)
 
         self.createdFiles.append(filename)
         return filename

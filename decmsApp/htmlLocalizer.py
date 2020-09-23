@@ -17,12 +17,12 @@ class htmlLocalizer:
         self.imagelinklist = []
         self.htmlSoup = htmlSoup
 
-    """
-    Method traverses soup for for link tags and finds those with css hrefs. It adds these links to an array and then creates and saves
-    the contents of the files locally in a folder. 
-    """
 
     def downloadCSS(self):
+        """
+        Method traverses soup for for link tags and finds those with css hrefs. It adds these links to an array and then creates and saves
+        the contents of the files locally in a folder. 
+        """
         count = 0
         print('Extracting css...')
         for css in self.htmlSoup.find_all(type='text/css'):

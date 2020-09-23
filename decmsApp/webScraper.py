@@ -3,9 +3,9 @@ from datetime import datetime
 from urllib.parse import urlparse, urljoin
 from zipfile import ZipFile
 from bs4 import BeautifulSoup as bSoup
-from htmlLocalizer import htmlLocalizer
+from decmsApp.htmlLocalizer import htmlLocalizer
 
-class webScaper():
+class webScraper():
     basePath = ''
     createdFiles = []
 
@@ -13,21 +13,6 @@ class webScaper():
         self.url = url
         self.basePath = urlparse(url).hostname
         self.imgPath = "imgs"
-    
-    """ 
-    Returns boolean. True if a wordPress website, False if not. 
-    Method searches through link tags with urls. If the a url contains 'wp-conent' the loop breaks and returns true
-    """
-    def wordPressDetector(self, soup):
-        wordPress = False
-        
-        for wp in soup.find_all('link', href=True):
-            url = wp.attrs.get("href")
-            if url.find("wp-content") != -1:
-                wordPress = True
-                break
-        
-        return wordPress
     
 
     """ 

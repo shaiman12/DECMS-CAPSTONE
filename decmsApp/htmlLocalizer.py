@@ -23,8 +23,9 @@ class htmlLocalizer:
 
     def downloadCSS(self):
         """
-        Method traverses soup for for link tags and finds those with css hrefs. It adds these links to an array and then creates and saves
-        the contents of the files locally in a folder. 
+        Method traverses soup for for link tags and finds those with css hrefs. It obtains the url and makes a get request in order 
+        to get the contents of the css file. It creates a new file name and replaces the old file name in the soup. It then creates a new 
+        directory and locally saves the css files. 
         """
         count = 0
         print('Extracting css...')
@@ -47,29 +48,37 @@ class htmlLocalizer:
                 count = count + 1
         print(f'Successfully extracted {count} css files...')
 
-    """ Returns a list of all links of images from a URL"""
-
-    def getImageList(self):
-        links = []
-        print('Getting list of images...')
-
+    def downloadImages(self):
+        """ 
+         Method traverses soup for for img tags and finds those with valid src's. It obtains the url and makes a get request in order 
+        to get the contents of the images. It replaces the old file name in the soup to the local file name. It then creates a new 
+        directory and locally saves the image files. 
+        """
+        count = 0 
+        print('Downloading images...')
         for image in self.htmlSoup.find_all("img"):
-            imageurl = image.attrs.get("src")
-            if not imageurl:
-                continue
-            imageurl = urljoin(self.url, imageurl)
-            try:
-                # removing "?" from imgs
-                x = imageurl.index("?")
-                imageurl = imageurl[:x]
-            except:
-                pass
-            links.append(imageurl)
-        return links
+            if image.attrs.get("src"):
+                imageUrl = urljoin(self.url, image.attrs.get("src"))
+                if imageUrl.__contains__("?"):
+                    shortenUrl = imageUrl.index("?")
+                    imageUrl = imageUrl[:shortenUrl]
+                
+                imgFilename = "imgs/"+imageUrl.split("/")[-1]
+                image['src'] = imgFilename
+                os.makedirs(os.path.dirname(imgFilename), exist_ok=True)
 
-    """ Receives a list of image urls and downloads them locally  """
+                imageContent = requests.get(imageUrl, stream=True)
+                if imageContent.status_code == 200:
+                    imageContent.raw.decode_content = True
+                    with open(imgFilename, 'wb') as f:
+                        shutil.copyfileobj(imageContent.raw, f)
+                        count = count + 1
 
+        print(f'Successfully extracted {count} images files...')
+
+"""
     def downloadImg(self, image_url):
+        
 
         filename = "imgs/"+image_url.split("/")[-1]
         r = requests.get(image_url, stream=True)
@@ -78,9 +87,9 @@ class htmlLocalizer:
             with open(filename, 'wb') as f:
                 shutil.copyfileobj(r.raw, f)
 
-    """ Using the html soup, this method replaces the old image url with the new locally saved version """
 
     def replaceImg(self):
+
         downloadedImages = os.listdir("imgs/")
 
         for image in self.htmlSoup.find_all("img"):
@@ -95,3 +104,4 @@ class htmlLocalizer:
             pos = downloadedImages.index(imagePart)
             if(pos > -1):
                 image["src"] = "imgs/"+downloadedImages[pos]
+"""

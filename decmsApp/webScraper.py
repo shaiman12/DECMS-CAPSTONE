@@ -32,16 +32,7 @@ class webScraper():
 
         localizeContent = htmlLocalizer(self.url, htmlSoup)
         localizeContent.downloadCSS()
-        imagelist = localizeContent.getImageList()
-        print('Downloading images...')
-        for img in imagelist:
-            localizeContent.downloadImg(img)
-
-        print('Successfully downloaded images...')
-        print('Renaming remote image paths to local paths...')
-        localizeContent.replaceImg()
-        print('Done')
-
+        localizeContent.downloadImages()
         
         currentDateTime = datetime.now().strftime("%m/%d/%Y-%H:%M:%S").replace('/', '-')
         filename = self.basePath+'-'+currentDateTime+".html"

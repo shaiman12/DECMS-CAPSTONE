@@ -17,8 +17,8 @@ class websiteValidator:
             isOnline = requests.get(self.siteUrl)
             if(isOnline.status_code == 200):
                 print("Website is up and running!")
-        except requests.ConnectionError as e:
-            print (e + "Cannot connect to website")
+        except requests.RequestException as e:
+            print(e)
             self.siteValidator = False
     
     def wordPressDetector(self):
@@ -26,17 +26,25 @@ class websiteValidator:
         Method added two wp entensions to the user inputed url. If those pages exist its a WP website. If not it checks the text 
         of the url's html for an instance of the word "wp-" indicating a WP content. If all checks fail it sets validator to false. 
         """
+        checksPassed = 0 
         wpLoginPage = requests.get(self.siteUrl + '/wp-login.php')
         wpAdminPage = requests.get(self.siteUrl + '/wp-admin')
         wpLinks = requests.get(self.siteUrl)
+
         #can make messages more robust in future refactor
-        if wpLoginPage.status_code == 200 or wpAdminPage.status_code == 200:
+        if wpLoginPage.status_code == 200: 
+            print("This is a wordpress website! It has a WP login page!")
+            checksPassed +=1; 
+        if wpAdminPage.status_code == 200:
             print("This is a wordpress website! It has a WP admin page!")
-        elif 'wp-' in wpLinks.text:
+            checksPassed +=1;
+        if 'wp-' in wpLinks.text:
             print("This is a wordpress website!")
-        else:
-            print("This isn't built in WordPress!")
+            checksPassed +=1;
+        
+        if checksPassed == 0:
             self.siteValidator = False
+       
 
     def runWebsiteChecks(self):
         """

@@ -11,26 +11,25 @@ class webScraper():
     Class receives url from the flask application. It creates the HTML soup and *runs recurvisely method that downlaods 
     each html file and its contents in given file tree.  
     """
-    basePath = ''
-    createdFiles = []
 
     def __init__(self, url):
         """
         Constructor class. Creates url and base path variables. 
         """
-        self.url = url
+        self.createdFiles = []
+        self.homeUrl = url
         self.basePath = urlparse(url).hostname
     
-    def createHtmlFile(self):
+    def downloadWebPage(self, url):
         """ 
          Method creates the html soup from the given url. 
          It creates an instance of the hmtlLocalizer variable and invokes its methods to download the css and object links. It updates
          the html text and outputs a local html file. 
         """
 
-        htmlSoup = bSoup(requests.Session().get(self.url).content, "html.parser")
+        htmlSoup = bSoup(requests.Session().get(url).content, "html.parser")
 
-        localizeContent = htmlLocalizer(self.url, htmlSoup)
+        localizeContent = htmlLocalizer(url, htmlSoup)
         localizeContent.downloadCSS()
         localizeContent.downloadImages()
         
@@ -44,3 +43,12 @@ class webScraper():
         self.createdFiles.append(filename)
         return filename
     
+    """
+    def downloadWebsite(self):
+        pass
+
+    download website will become the function called from app.py. download webpage will become the recursive function. 
+    this method may also be used to call the website validator in the future ,instaed of it being run in app.py. Confused 
+    on some flask stuff which I need to clarify first. 
+    - Avo  
+    """

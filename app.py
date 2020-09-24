@@ -1,6 +1,6 @@
 from flask import Flask, render_template, url_for, request, flash, send_file, redirect
 from decmsApp.webScraper import webScraper
-from decmsApp.websiteValidator import websiteValidator
+from decmsApp.websiteValidator import *
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "b5121df8bab03d4d38d2ebf2c08eebad"
@@ -25,15 +25,20 @@ def scrape():
     url = request.args.get('url')
 
     try:
-        siteValidator = websiteValidator(url)
-        isValid = siteValidator.runWebsiteChecks()
+        wpSiteValidator = wpValidator(url)
+        isValid = wpSiteValidator.runWebsiteChecks()
         if  isValid == False:
-            print("Failed Checks")
-            return
+            print("Failed WordPress Checks.... Trying Drupal")
+            drupSiteValidator = drupalValidator(url)
+            isValid = drupSiteValidator.runWebsiteChecks()
+            if  isValid == False:
+                print("Failed Drupal Checks.... Trying Drupal")
+                return
         
         scraper = webScraper(url)
-        createdFile = scraper.createHtmlFile()
+        createdFile = scraper.downloadWebPage(url)
         send_file(createdFile, as_attachment=True)
+        
         
 
     except Exception as e:

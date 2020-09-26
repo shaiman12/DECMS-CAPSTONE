@@ -4,7 +4,7 @@ from urllib.parse import urlparse, urljoin
 from zipfile import ZipFile
 from bs4 import BeautifulSoup as bSoup
 from decmsApp.htmlLocalizer import htmlLocalizer
-
+from collections import deque  
 
 class webScraper():
     """
@@ -58,11 +58,59 @@ class webScraper():
         return filename
 
     """
-    def downloadWebsite(self):
-        pass
-
-    download website will become the function called from app.py. download webpage will become the recursive function. 
-    this method may also be used to call the website validator in the future ,instaed of it being run in app.py. Confused 
-    on some flask stuff which I need to clarify first. 
-    - Avo  
+    Crawls a website for all local webpages (that are on the same domain) and downloads them recursively,
+    until there are no more unique pages.
     """
+
+# https://www.freecodecamp.org/news/how-to-build-a-url-crawler-to-map-a-website-using-python-6a287be1da11/
+
+    def downloadAllWebPages(self):
+        newUrls = deque([self.formatUrl(self.homeUrl)])
+        brokenUrls = set()
+        processedUrls = set()
+
+        # process urls one by one until we exhaust the queue 
+        while len(newUrls):    
+        # # move url from the queue to processed url set    
+            url = newUrls.popleft()
+            htmlSoup = bSoup(requests.Session().get(self.homeUrl).content, "html.parser")
+            self.downloadWebPage(url)
+            processedUrls.add(url)
+        # # print the current url    
+            print(f'Processing {url}')
+            try:
+                response = requests.get(url)
+
+            except(requests.exceptions.MissingSchema, requests.exceptions.ConnectionError, requests.exceptions.InvalidURL, requests.exceptions.InvalidSchema):    
+                # Add broken urls to it’s own set, then continue    
+                brokenUrls.add(url)
+                continue
+            
+            for anchorTag in htmlSoup.find_all("a", href=True):
+                currentUrl = self.formatUrl(anchorTag['href'])
+                
+                #If it is explicitely referring to a local page or has a relative path
+                if self.basePath in currentUrl or currentUrl.startswith('/'):     
+
+                    if( (not (currentUrl in processedUrls)) & (not (currentUrl in newUrls))):
+
+                        newUrls.append(self.formatUrl(currentUrl))
+
+
+    """
+    Converts any string that is designed to describe a web address into a comparable, 
+    standardized format of 'http://example.com
+    """
+
+    def formatUrl(self,url):
+        formattedUrl = url.replace('www.','')
+        formattedUrl = formattedUrl.replace('https','http')
+
+        if formattedUrl.startswith('/'):
+            formattedUrl = "http://"+self.basePath + formattedUrl
+        if formattedUrl.endswith('/'):
+            formattedUrl = formattedUrl[:len(formattedUrl)-1]
+        if not 'http' in formattedUrl:
+            formattedUrl='http://'+formattedUrl
+        return formattedUrl
+

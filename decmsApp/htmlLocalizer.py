@@ -51,8 +51,6 @@ class htmlLocalizer:
         links = []
         print('Getting list of images...')
         for image in self.htmlSoup.find_all("img"):
-            print(image)
-            print("----------")
             links.append(self.link_maker(image))
         return links
 

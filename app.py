@@ -23,7 +23,7 @@ def scrape():
     If unssuccessful catches and prints the error. 
     """
     url = request.args.get('url')
-
+    allPagesRequested = request.args.get('all-pages') == 'on'
     try:
         wpSiteValidator = wpValidator(url)
         isValid = wpSiteValidator.runWebsiteChecks()
@@ -36,9 +36,10 @@ def scrape():
                 return
         
         scraper = webScraper(url)
-        # createdFile = scraper.downloadWebPage(url)
-        scraper.downloadAllWebPages()
-        # send_file(createdFile, as_attachment=True)
+
+        if(allPagesRequested):
+            scraper.downloadAllWebPages()
+        else: scraper.downloadWebPage(url)
         
         
 

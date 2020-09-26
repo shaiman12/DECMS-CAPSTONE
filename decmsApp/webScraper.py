@@ -5,6 +5,7 @@ from zipfile import ZipFile
 from bs4 import BeautifulSoup as bSoup
 from decmsApp.htmlLocalizer import htmlLocalizer
 
+
 class webScraper():
     """
     To be Updated fully.
@@ -19,7 +20,7 @@ class webScraper():
         self.createdFiles = []
         self.homeUrl = url
         self.basePath = urlparse(url).hostname
-    
+
     def downloadWebPage(self, url):
         """ 
          Method creates the html soup from the given url. 
@@ -31,18 +32,31 @@ class webScraper():
 
         localizeContent = htmlLocalizer(url, htmlSoup)
         localizeContent.downloadCSS()
-        localizeContent.downloadImages()
-        
-        currentDateTime = datetime.now().strftime("%m/%d/%Y-%H:%M:%S").replace('/', '-')
+        images = localizeContent.get_image_list()
+        for image in images:
+            print(image)
+            localizeContent.download_media(image)
+        audios = localizeContent.get_audio_list()
+        for audio in audios:
+            localizeContent.download_media(audio)
+        videos = localizeContent.get_video_list()
+        for video in videos:
+            localizeContent.download_media(video)
+        localizeContent.replaceImg()
+        localizeContent.replaceAudio()
+        localizeContent.replaceVideos()
+
+        currentDateTime = datetime.now().strftime(
+            "%m/%d/%Y-%H:%M:%S").replace('/', '-')
         filename = self.basePath+'-'+currentDateTime+".html"
-       
+
         localHtmlFile = htmlSoup.prettify("utf-8")
         with open(filename, "wb") as file:
             file.write(localHtmlFile)
 
         self.createdFiles.append(filename)
         return filename
-    
+
     """
     def downloadWebsite(self):
         pass

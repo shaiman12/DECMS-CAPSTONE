@@ -20,6 +20,7 @@ class webScraper():
         self.createdFiles = []
         self.homeUrl = url
         self.basePath = urlparse(url).hostname
+        self.processedUrls = set()
 
     def downloadWebPage(self, url):
         """ 
@@ -67,7 +68,7 @@ class webScraper():
     def downloadAllWebPages(self):
         newUrls = deque([self.formatUrl(self.homeUrl)])
         brokenUrls = set()
-        processedUrls = set()
+
 
         # process urls one by one until we exhaust the queue 
         while len(newUrls):    
@@ -75,7 +76,7 @@ class webScraper():
             url = newUrls.popleft()
             htmlSoup = bSoup(requests.Session().get(self.homeUrl).content, "html.parser")
             self.downloadWebPage(url)
-            processedUrls.add(url)
+            self.processedUrls.add(url)
         # # print the current url    
             print(f'Processing {url}')
             try:
@@ -92,7 +93,7 @@ class webScraper():
                 #If it is explicitely referring to a local page or has a relative path
                 if self.basePath in currentUrl or currentUrl.startswith('/'):     
 
-                    if( (not (currentUrl in processedUrls)) & (not (currentUrl in newUrls))):
+                    if( (not (currentUrl in self.processedUrls)) & (not (currentUrl in newUrls))):
 
                         newUrls.append(self.formatUrl(currentUrl))
 

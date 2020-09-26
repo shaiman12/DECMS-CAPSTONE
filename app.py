@@ -39,9 +39,12 @@ def scrape():
 
         if(allPagesRequested):
             scraper.downloadAllWebPages()
-        else: scraper.downloadWebPage(url)
-        
-        
+            processedUrls = scraper.processedUrls
+            flash(f'Successfully downloaded: {processedUrls}', 'success')
+
+        else: 
+            scraper.downloadWebPage(url)   
+            flash(f'Successfully downloaded: {url}', 'success')
 
     except Exception as e:
         flash(f'Failed to download a snapshot of {url}. Error: {e}', 'danger')

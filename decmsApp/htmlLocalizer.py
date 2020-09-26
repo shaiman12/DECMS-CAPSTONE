@@ -60,14 +60,15 @@ class htmlLocalizer:
 
     def get_video_list(self):
         links = []
+
         print('Getting list of videos...')
 
-        for video in self.htmlSoup.find_all('source', type='video/ogg'):
-            links.append(self.link_maker(video))
-        for video in self.htmlSoup.find_all('source', type='video/mp4'):
-            links.append(self.link_maker(video))
-        for video in self.htmlSoup.find_all('source', type='video/webm'):
-            links.append(self.link_maker(video))
+        # for video in self.htmlSoup.find_all('source', type='video/ogg'):
+        #     links.append(self.link_maker(video))
+        # for video in self.htmlSoup.find_all('source', type='video/mp4'):
+        #     links.append(self.link_maker(video))
+        # for video in self.htmlSoup.find_all('source', type='video/webm'):
+        #     links.append(self.link_maker(video))
         return links
 
 

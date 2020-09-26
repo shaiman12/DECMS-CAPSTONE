@@ -30,7 +30,7 @@ class wpValidator(websiteValidator):
         websiteValidator.__init__(self, url)
 
     
-    def wordPressDetector(self):
+    def isWordPressSite(self):
         """
         Method added two wp entensions to the user inputed url. If those pages exist its a WP website. If not it checks the text 
         of the url's html for an instance of the word "wp-" indicating a WP content. If any checks pass it sets validator to true.  
@@ -43,14 +43,20 @@ class wpValidator(websiteValidator):
         if wpLoginPage.status_code == 200: 
             print("This is a wordpress website! It has a WP login page!")
             self.siteValidator = True 
+            return True
         elif wpAdminPage.status_code == 200:
             print("This is a wordpress website! It has a WP admin page!")
             self.siteValidator = True
+            return True
+
         elif 'wp-' in wpLinks.text:
             print("This is a wordpress website! It has WP content")
             self.siteValidator = True
+            return True
+
         else:
             print("This isn't a WordPress Website!")
+            return False
     
     def runWebsiteChecks(self):
         """
@@ -59,7 +65,7 @@ class wpValidator(websiteValidator):
         """
         print("Performing WordPress Checks...")
         if self.isUrlValid() == True:
-            self.wordPressDetector()
+            self.isWordPressSite()
 
         return self.siteValidator
 
@@ -69,7 +75,7 @@ class drupalValidator(websiteValidator):
     def __init__(self, url):
         websiteValidator.__init__(self, url)
 
-    def drupalDetector(self):
+    def isDrupalSite(self):
         """
         Method checks if two drupal entensions to the user inputed url work. If those pages exist its a drupal website. If not it checks the text 
         of the url's html for an instance of the word "drupal" indicating a WP content. If any checks pass it sets validator to true. 
@@ -81,14 +87,21 @@ class drupalValidator(websiteValidator):
         if drpalReadMe.status_code == 200: 
             print("This is a drupal website! It has a drupal README page!")
             self.siteValidator = True 
+            return True
         elif drpalReadMe.status_code == 200:
             print("This is a drupal website! It has a drupal modules README page!")
             self.siteValidator = True
+            return True
+
         elif 'drupal' in drupalLinks.text:
             print("This is a drupal website! It has drupal content")
             self.siteValidator = True
+            return True
+
         else:
             print("This isn't a Drupal Website!")
+            return False
+
 
     def runWebsiteChecks(self):
         """
@@ -97,7 +110,7 @@ class drupalValidator(websiteValidator):
         """
         print("Performing Drupal Checks...")
         if self.isUrlValid():
-            self.drupalDetector()
+            self.isDrupalSite()
         return self.siteValidator
 
     

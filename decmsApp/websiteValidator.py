@@ -7,8 +7,8 @@ class websiteValidator:
     """
     def __init__(self, url):
         self.siteUrl = url
-        self.siteValidator = False
-        #homeSoup = bSoup(requests.Session().get(url).content, "html.parser")
+        self.headers = {'User-Agent': '...','referer': 'https://...'}
+        self.homeSoup = bSoup(requests.Session().get(url, headers = self.headers).content, "html.parser")
 
     def isUrlValid(self):
         """
@@ -16,10 +16,13 @@ class websiteValidator:
         if not it sets the validator to false
         """
         try:
-            isOnline = requests.get(self.siteUrl)
+            isOnline = requests.get(self.siteUrl, headers = self.headers)
             if(isOnline.status_code == 200):
                 print("Website is up and running!")
                 return True
+            else:
+                print("Website doesn't appear to be up and running...")
+                return False
         except requests.RequestException as e:
             print(e)
             return False
@@ -35,26 +38,26 @@ class wpValidator(websiteValidator):
         Method added two wp entensions to the user inputed url. If those pages exist its a WP website. If not it checks the text 
         of the url's html for an instance of the word "wp-" indicating a WP content. If any checks pass it sets validator to true.  
         """
-        wpLoginPage = requests.get(self.siteUrl + '/wp-login.php')
-        wpAdminPage = requests.get(self.siteUrl + '/wp-admin')
-        wpLinks = requests.get(self.siteUrl)
-
+        wpLoginPage = requests.get(self.siteUrl + '/wp-login.php', headers = self.headers)
+        wpAdminPage = requests.get(self.siteUrl + '/wp-admin', headers = self.headers)
+        wpLinks = requests.get(self.siteUrl, headers = self.headers)
+    
         #can make messages more robust in future refactor
         if wpLoginPage.status_code == 200: 
             print("This is a wordpress website! It has a WP login page!")
-            self.siteValidator = True 
-            return True
+            return True 
+            
         elif wpAdminPage.status_code == 200:
             print("This is a wordpress website! It has a WP admin page!")
-            self.siteValidator = True
-            return True
-
-        elif 'wp-' in wpLinks.text:
-            print("This is a wordpress website! It has WP content")
-            self.siteValidator = True
             return True
 
         else:
+            for wpContent in self.homeSoup.find_all("link", href = True):
+                url = wpContent["href"]
+                if url.find("wp-") != -1:
+                    print("This is a WordPress website! It has WP content")
+                    return True
+
             print("This isn't a WordPress Website!")
             return False
     
@@ -65,24 +68,23 @@ class wpValidator(websiteValidator):
         """
         print("Performing WordPress Checks...")
         if self.isUrlValid() == True:
-            self.isWordPressSite()
-
-        return self.siteValidator
+            return self.isWordPressSite()
 
 
 class drupalValidator(websiteValidator):
     
     def __init__(self, url):
         websiteValidator.__init__(self, url)
+        self.siteValidator = False 
 
     def isDrupalSite(self):
         """
         Method checks if two drupal entensions to the user inputed url work. If those pages exist its a drupal website. If not it checks the text 
         of the url's html for an instance of the word "drupal" indicating a WP content. If any checks pass it sets validator to true. 
         """
-        drpalReadMe = requests.get(self.siteUrl + '/readme.txt')
-        drupalMReadMe = requests.get(self.siteUrl + '/modules/README.txt')
-        drupalLinks = requests.get(self.siteUrl)
+        drpalReadMe = requests.get(self.siteUrl + '/readme.txt', headers = self.headers)
+        drupalMReadMe = requests.get(self.siteUrl + '/modules/README.txt', headers = self.headers)
+        drupalLinks = requests.get(self.siteUrl, headers = self.headers)
 
         if drpalReadMe.status_code == 200: 
             print("This is a drupal website! It has a drupal README page!")

@@ -20,6 +20,7 @@ class webScraper():
         self.createdFiles = []
         self.homeUrl = url
         self.basePath = urlparse(url).hostname
+        self.headers = {'User-Agent': '...','referer': 'https://...'}
 
     def downloadWebPage(self, url):
         """ 
@@ -28,7 +29,7 @@ class webScraper():
          the html text and outputs a local html file. 
         """
 
-        htmlSoup = bSoup(requests.Session().get(url).content, "html.parser")
+        htmlSoup = bSoup(requests.Session().get(url, headers = self.headers).content, "html.parser")
 
         localizeContent = htmlLocalizer(url, htmlSoup)
         localizeContent.downloadCSS()

@@ -20,7 +20,7 @@ class webScraper():
         self.createdFiles = []
         self.homeUrl = url
         self.basePath = urlparse(url).hostname
-        self.headers = {'User-Agent': '...','referer': 'https://...'}
+        self.headers = {'User-Agent': '...', 'referer': 'https://...'}
 
     def downloadWebPage(self, url):
         """ 
@@ -29,13 +29,13 @@ class webScraper():
          the html text and outputs a local html file. 
         """
 
-        htmlSoup = bSoup(requests.Session().get(url, headers = self.headers).content, "html.parser")
+        htmlSoup = bSoup(requests.Session().get(
+            url, headers=self.headers).content, "html.parser")
 
         localizeContent = htmlLocalizer(url, htmlSoup)
         localizeContent.downloadCSS()
         images = localizeContent.get_image_list()
         for image in images:
-            print(image)
             localizeContent.download_media(image)
         audios = localizeContent.get_audio_list()
         for audio in audios:
@@ -46,6 +46,9 @@ class webScraper():
         localizeContent.replaceImg()
         localizeContent.replaceAudio()
         localizeContent.replaceVideos()
+
+        print("Removing unnecessary forms like login boxes, searches...")
+        localizeContent.removeForms()
 
         currentDateTime = datetime.now().strftime(
             "%m/%d/%Y-%H:%M:%S").replace('/', '-')

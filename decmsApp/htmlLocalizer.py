@@ -51,8 +51,6 @@ class htmlLocalizer:
         links = []
         print('Getting list of images...')
         for image in self.htmlSoup.find_all("img"):
-            print(image)
-            print("----------")
             links.append(self.link_maker(image))
         return links
 
@@ -76,7 +74,10 @@ class htmlLocalizer:
 # Formats a link into correct form for downloading
 
     def link_maker(self, mediaItem):
-        mediaurl = mediaItem.attrs.get("src")
+        if mediaItem.has_attr('data-original'):
+            mediaurl = mediaItem.attrs.get("data-original")
+        else:
+            mediaurl = mediaItem.attrs.get("src")
         mediaurl = urljoin(self.url, mediaurl)
         try:
             # removing "?" from imgs
@@ -124,7 +125,11 @@ class htmlLocalizer:
 
     def replaceMedia(self, media):
         downloadedMedia = os.listdir("media/")
-        mediaLink = media.attrs.get("src")
+        mediaLink = ""
+        if(media.has_attr('data-original')):
+            mediaLink = media.attrs.get("data-original")
+        else:
+            mediaLink = media.attrs.get("src")
         dissasembled = urlparse(mediaLink)
         filename, file_ext = os.path.splitext(
             os.path.basename(dissasembled.path))

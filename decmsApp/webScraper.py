@@ -39,7 +39,9 @@ class webScraper():
         for image in images:
             localizeContent.download_media(image)
 
-        localizeContent.get_bg_image_list()
+        bgImages = localizeContent.get_bg_image_list()
+        for image in bgImages:
+            localizeContent.download_media(image)
         audios = localizeContent.get_audio_list()
         for audio in audios:
             localizeContent.download_media(audio)

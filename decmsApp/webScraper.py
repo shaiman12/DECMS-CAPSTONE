@@ -34,6 +34,7 @@ class webScraper():
 
         localizeContent = htmlLocalizer(url, htmlSoup)
         localizeContent.downloadCSS()
+        localizeContent.downloadScripts()
         images = localizeContent.get_image_list()
         for image in images:
             localizeContent.download_media(image)

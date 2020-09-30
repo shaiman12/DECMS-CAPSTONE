@@ -47,6 +47,33 @@ class htmlLocalizer:
                 count = count + 1
         print(f'Successfully extracted {count} css files...')
 
+    def downloadScripts(self):
+        """
+        Method traverses soup for for link tags and finds those with script hrefs. It obtains the url and makes a get request in order
+        to get the contents of the js file. It creates a new file name and replaces the old file name in the soup. It then creates a new
+        directory and locally saves the js files.
+        """
+        count = 0
+        print('Extracting scripts...')
+        for jsFile in self.htmlSoup.find_all("script"):
+            if jsFile.attrs.get("src") and '.js' in jsFile['src']:
+
+                completeJsUrl = urljoin(self.url, jsFile.attrs.get("src"))
+                fileContent = requests.get(completeJsUrl)
+
+                # Renames the url in the html Soup
+                newFileName = "js/Script_" + str(count) + ".js"
+                jsFile['src'] = newFileName
+
+                ########### This creates a new file directory from scratch. #########
+                os.makedirs(os.path.dirname(newFileName), exist_ok=True)
+
+                localJSFile = open(jsFile['src'], "w")
+                localJSFile.write(fileContent.text)
+                localJSFile.close
+                count = count + 1
+        print(f'Successfully extracted {count} js files...')
+
     def get_image_list(self):
         links = []
         print('Getting list of images...')

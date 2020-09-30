@@ -32,14 +32,16 @@ def scrape():
             print("Failed WordPress Checks.... Trying Drupal")
             drupSiteValidator = drupalValidator(url)
             isValid = drupSiteValidator.runWebsiteChecks()
+            print(isValid)
             if  isValid == False:
-                print("Failed WordPress Checks.... Trying Drupal")
+                print("Failed Drupal Checks...")
                 return
         
         scraper = webScraper(url)
         createdFile = scraper.downloadWebPage(url)
         send_file(createdFile, as_attachment=True)
-
+        
+        
     except Exception as e:
         flash(f'Failed to download a snapshot of {url}', 'danger')
         print(e)

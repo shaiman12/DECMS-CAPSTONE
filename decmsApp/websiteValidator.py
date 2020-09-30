@@ -8,7 +8,6 @@ class websiteValidator:
     def __init__(self, url):
         self.siteUrl = url
         self.headers = {'User-Agent': '...','referer': 'https://...'}
-        self.homeSoup = bSoup(requests.Session().get(url, headers = self.headers).content, "html.parser")
 
     def isUrlValid(self):
         """
@@ -24,7 +23,7 @@ class websiteValidator:
                 print("Website doesn't appear to be up and running...")
                 return False
         except requests.RequestException as e:
-            print(e)
+            #print(e)
             return False
 
 class wpValidator(websiteValidator):
@@ -52,7 +51,8 @@ class wpValidator(websiteValidator):
             return True
 
         else:
-            for wpContent in self.homeSoup.find_all("link", href = True):
+            homeSoup = bSoup(requests.Session().get(self.siteUrl, headers = self.headers).content, "html.parser")
+            for wpContent in homeSoup.find_all("link", href = True):
                 url = wpContent["href"]
                 if url.find("wp-") != -1:
                     print("This is a WordPress website! It has WP content")
@@ -69,13 +69,15 @@ class wpValidator(websiteValidator):
         print("Performing WordPress Checks...")
         if self.isUrlValid() == True:
             return self.isWordPressSite()
+        else:
+            return False
 
 
 class drupalValidator(websiteValidator):
     
     def __init__(self, url):
         websiteValidator.__init__(self, url)
-        self.siteValidator = False 
+    
 
     def isDrupalSite(self):
         """
@@ -88,16 +90,14 @@ class drupalValidator(websiteValidator):
 
         if drpalReadMe.status_code == 200: 
             print("This is a drupal website! It has a drupal README page!")
-            self.siteValidator = True 
             return True
+
         elif drpalReadMe.status_code == 200:
             print("This is a drupal website! It has a drupal modules README page!")
-            self.siteValidator = True
             return True
 
         elif 'drupal' in drupalLinks.text:
             print("This is a drupal website! It has drupal content")
-            self.siteValidator = True
             return True
 
         else:
@@ -112,7 +112,8 @@ class drupalValidator(websiteValidator):
         """
         print("Performing Drupal Checks...")
         if self.isUrlValid():
-            self.isDrupalSite()
-        return self.siteValidator
+            return self.isDrupalSite()
+        else:
+            return False
 
     

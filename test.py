@@ -1,5 +1,5 @@
 import unittest
-from decmsApp.websiteValidator import websiteValidator, wpValidator
+from decmsApp.websiteValidator import websiteValidator, wpValidator, drupalValidator
 
 class TestWebsiteValidator(unittest.TestCase):
 
@@ -23,8 +23,20 @@ class TestWebsiteValidator(unittest.TestCase):
         self.assertFalse(result)
 
         #wordpress url
-        wpSite = "https://www.reddbar.com/"
+        wpSite = "https://techcrunch.com/"
         result = wpValidator(wpSite).isWordPressSite()
+        self.assertTrue(result)
+
+    def test_DrupalSite(self):
+
+        #other url
+        otherSite = "https://techcrunch.com/"
+        result = drupalValidator(otherSite).isDrupalSite()
+        self.assertFalse(result)
+
+        #drupal url
+        drupalSite = "https://www.arsenal.com/"
+        result = drupalValidator(drupalSite).isDrupalSite()
         self.assertTrue(result)
 
       

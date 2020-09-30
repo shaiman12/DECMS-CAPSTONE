@@ -78,8 +78,16 @@ class htmlLocalizer:
         links = []
         print('Getting list of images...')
         for image in self.htmlSoup.find_all("img"):
-            links.append(self.link_maker(image))
+            if(self.link_maker(image) == ""):
+                continue
+            else:
+                links.append(self.link_maker(image))
         return links
+
+    def get_bg_image_list(self):
+        links = []
+        for image in self.htmlSoup.find_all(style=True):
+            print(image)
 
 
 # Returns a list of all links of videos from a URL
@@ -105,6 +113,8 @@ class htmlLocalizer:
             mediaurl = mediaItem.attrs.get("data-original")
         else:
             mediaurl = mediaItem.attrs.get("src")
+        if mediaurl.find("svg+xml") > -1:
+            return ""
         mediaurl = urljoin(self.url, mediaurl)
         try:
             # removing "?" from imgs
@@ -119,7 +129,7 @@ class htmlLocalizer:
 
     def get_audio_list(self):
         links = []
-        print('Getting list of videos...')
+        print('Getting list of audio files...')
 
         for audio in self.htmlSoup.find_all('source', type='audio/ogg'):
             links.append(self.link_maker(audio))
@@ -144,6 +154,8 @@ class htmlLocalizer:
 
     def replaceImg(self):
         for image in self.htmlSoup.find_all("img"):
+            if self.replaceMedia(image) == "":
+                continue
             self.replaceMedia(image)
 
 # Using the html soup, this method replaces the old media url with the new locally saved version
@@ -155,6 +167,8 @@ class htmlLocalizer:
             mediaLink = media.attrs.get("data-original")
         else:
             mediaLink = media.attrs.get("src")
+        if mediaLink.find("svg+xml") > -1:
+            return ""
         dissasembled = urlparse(mediaLink)
         filename, file_ext = os.path.splitext(
             os.path.basename(dissasembled.path))

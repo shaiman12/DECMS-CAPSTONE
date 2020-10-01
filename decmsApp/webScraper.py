@@ -49,6 +49,7 @@ class webScraper():
         for video in videos:
             localizeContent.download_media(video)
         localizeContent.replaceImg()
+        localizeContent.replaceBgImages()
         localizeContent.replaceAudio()
         localizeContent.replaceVideos()
 

@@ -3,6 +3,7 @@ import os
 from bs4 import BeautifulSoup as bSoup
 from urllib.parse import urljoin, urlparse
 import shutil
+from cssutils import parseStyle
 
 
 class htmlLocalizer:
@@ -187,9 +188,33 @@ class htmlLocalizer:
         if(pos > -1):
             media["src"] = "media/"+downloadedMedia[pos]
 
+    def replaceBgImages(self):
+        downloadedMedia = os.listdir("media/")
+
+        elementsToReplace = []
+        for element in self.htmlSoup.find_all(style=True):
+            if(element["style"]).find("background-image: url") > -1:
+                elementsToReplace.append(element)
+
+        for element in elementsToReplace:
+            strStyle = element["style"]
+            start = strStyle.find("url(")+4
+            end = strStyle.find(")")
+            link = strStyle[start:end]
+
+            dissasembled = urlparse(link)
+            filename, file_ext = os.path.splitext(
+                os.path.basename(dissasembled.path))
+            mediaPart = filename+file_ext
+            pos = downloadedMedia.index(mediaPart)
+            if(pos > -1):
+                toReplace = "media/"+downloadedMedia[pos]
+                strStyle = strStyle.replace(link, toReplace)
+
+                element["style"] = strStyle
+
 
 # replaces all old video urls with the new locally saved versions
-
 
     def replaceVideos(self):
         for video in self.htmlSoup.find_all('source', type='video/mp4'):
@@ -202,6 +227,7 @@ class htmlLocalizer:
 
 # replaces all old audio urls with the new locally saved versions
 
+
     def replaceAudio(self):
         downloadedMedia = os.listdir("media/")
 
@@ -212,7 +238,6 @@ class htmlLocalizer:
 
 
 # form removal
-
 
     def removeForms(self):
         for form in self.htmlSoup.find_all("form"):

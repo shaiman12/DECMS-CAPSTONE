@@ -23,6 +23,7 @@ def scrape():
     If unssuccessful catches and prints the error. 
     """
     url = request.args.get('url')
+    allPagesRequested = request.args.get('all-pages') == 'on'
 
     try:
         wpSiteValidator = wpValidator(url)
@@ -38,8 +39,14 @@ def scrape():
                 return
 
         scraper = webScraper(url)
-        createdFile = scraper.downloadWebPage(url)
-        send_file(createdFile, as_attachment=True)
+        if(allPagesRequested):
+                    scraper.downloadAllWebPages()
+                    processedUrls = scraper.processedUrls
+                    flash(f'Successfully downloaded: {processedUrls}', 'success')
+
+        else: 
+            scraper.downloadWebPage(url)   
+            flash(f'Successfully downloaded: {url}', 'success')
 
     except Exception as e:
         flash(f'Failed to download a snapshot of {url}', 'danger')

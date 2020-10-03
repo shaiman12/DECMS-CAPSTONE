@@ -42,7 +42,8 @@ def scrape():
         if(allPagesRequested):
                     scraper.downloadAllWebPages()
                     processedUrls = scraper.processedUrls
-                    flash(f'Successfully downloaded: {processedUrls}', 'success')
+                    brokenUrls = scraper.brokenUrls
+                    flash(f'Successfully downloaded recursively: {processedUrls} but the following were broken: {brokenUrls}', 'success')
 
         else: 
             scraper.downloadWebPage(url)   

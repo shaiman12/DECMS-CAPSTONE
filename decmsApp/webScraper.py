@@ -1,6 +1,6 @@
 import requests
 from datetime import datetime
-from urllib.parse import urlparse, urljoin
+from urllib.parse import urlparse, urljoin, urlsplit
 from zipfile import ZipFile
 from bs4 import BeautifulSoup as bSoup
 from decmsApp.htmlLocalizer import htmlLocalizer
@@ -24,6 +24,8 @@ class webScraper():
         self.basePath = urlparse(url).hostname
         self.headers = {'User-Agent': '...', 'referer': 'https://...'}
         self.processedUrls = set()
+        self.brokenUrls = set()
+
 
 
     def downloadWebPage(self, url):
@@ -81,35 +83,36 @@ class webScraper():
 
     def downloadAllWebPages(self):
         newUrls = deque([self.formatUrl(self.homeUrl)])
-        brokenUrls = set()
 
 
         # process urls one by one until we exhaust the queue 
-        while len(newUrls):    
-        # move url from the queue to processed url set    
-            url = newUrls.popleft()
-            htmlSoup = bSoup(requests.Session().get(self.homeUrl).content, "html.parser")
-            self.downloadWebPage(url)
-            self.processedUrls.add(url)
+        while len(newUrls):
+
         # print the current url    
-            print(f'Processing {url}')
             try:
-                response = requests.get(url)
+                url = newUrls.popleft()
+                htmlSoup = bSoup(requests.Session().get(
+                url, headers=self.headers).content, "html.parser")
+                self.downloadWebPage(url)
+                self.processedUrls.add(url)
+                print(f'processing {url}')
+                for anchorTag in htmlSoup.find_all("a", href=True):
+                    currentUrl = self.formatUrl(anchorTag['href'])
+                #If it is explicitely referring to a local page or has a relative path
+                    if self.basePath in currentUrl or currentUrl.startswith('/'):     
+
+                        if( (not (currentUrl in self.processedUrls)) & (not (currentUrl in newUrls))):
+
+                            newUrls.append(self.formatUrl(currentUrl))
+
 
             except(requests.exceptions.MissingSchema, requests.exceptions.ConnectionError, requests.exceptions.InvalidURL, requests.exceptions.InvalidSchema):    
                 # Add broken urls to it’s own set, then continue    
-                brokenUrls.add(url)
+                self.brokenUrls.add(url)
+                print('Oh no broken link :(')
                 continue
             
-            for anchorTag in htmlSoup.find_all("a", href=True):
-                currentUrl = self.formatUrl(anchorTag['href'])
-                
-                #If it is explicitely referring to a local page or has a relative path
-                if self.basePath in currentUrl or currentUrl.startswith('/'):     
-
-                    if( (not (currentUrl in self.processedUrls)) & (not (currentUrl in newUrls))):
-
-                        newUrls.append(self.formatUrl(currentUrl))
+            
 
 
     """

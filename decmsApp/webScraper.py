@@ -34,7 +34,7 @@ class webScraper():
          It creates an instance of the hmtlLocalizer variable and invokes its methods to download the css and object links. It updates
          the html text and outputs a local html file. 
         """
-
+        print(f'Downloading {url}')
         htmlSoup = bSoup(requests.Session().get(
             url, headers=self.headers).content, "html.parser")
 
@@ -79,9 +79,8 @@ class webScraper():
     until there are no more unique pages.
     """
 
-# TODO: remove reference https://www.freecodecamp.org/news/how-to-build-a-url-crawler-to-map-a-website-using-python-6a287be1da11/
-
     def downloadAllWebPages(self):
+        print('Starting recursive download...')
         newUrls = deque([self.formatUrl(self.homeUrl)])
 
 
@@ -95,7 +94,6 @@ class webScraper():
                 url, headers=self.headers).content, "html.parser")
                 self.downloadWebPage(url)
                 self.processedUrls.add(url)
-                print(f'processing {url}')
                 for anchorTag in htmlSoup.find_all("a", href=True):
                     currentUrl = self.formatUrl(anchorTag['href'])
                 #If it is explicitely referring to a local page or has a relative path

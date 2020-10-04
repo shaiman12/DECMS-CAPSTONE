@@ -50,7 +50,7 @@ def scrape():
             flash(f'Successfully downloaded: {url}', 'success')
 
     except Exception as e:
-        flash(f'Failed to download a snapshot of {url}', 'danger')
+        flash(f'Failed to download a snapshot of {url}. Error: {e}', 'danger')
         print(e)
 
     finally:

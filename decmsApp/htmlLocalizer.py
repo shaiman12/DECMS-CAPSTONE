@@ -156,14 +156,16 @@ class htmlLocalizer:
 
 # Receives a URL and downloads the file locally
 
-    def download_media(self, media_url):
+    def downloadMedia(self, media_url):
 
         filename = "media/"+media_url.split("/")[-1]
-        r = requests.get(media_url, stream=True)
-        if r.status_code == 200:
-            r.raw.decode_content = True
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+
+        mediaContent = requests.get(media_url, stream=True)
+        if mediaContent.status_code == 200:
+            mediaContent.raw.decode_content = True
             with open(filename, 'wb') as f:
-                shutil.copyfileobj(r.raw, f)
+                shutil.copyfileobj(mediaContent.raw, f)
 
 
 # replaces all old image urls with the new locally saved versions
@@ -248,7 +250,27 @@ class htmlLocalizer:
 
 # form removal
 
-
     def removeForms(self):
         for form in self.htmlSoup.find_all("form"):
             form.replaceWith('')
+
+    def getAllMediaLists(self):
+        """
+        Returns single list containing all media urls to be downloaded. 
+        Method makes get {media} list methods within localizer class.
+        """
+        images = self.get_image_list()
+        bgImages = self.get_bg_image_list()
+        audios = self.get_audio_list()
+        videos = self.get_video_list()
+        mediaList = images+ bgImages + audios + videos
+        return mediaList
+
+    def replaceAllMedia(self):
+        """
+        Method makes use of all replace 'media' methods for cleaner code. 
+        """
+        self.replaceImg()
+        self.replaceBgImages()
+        self.replaceAudio()
+        self.replaceVideos()

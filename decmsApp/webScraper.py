@@ -28,12 +28,12 @@ class webScraper():
         self.brokenUrls = set()
 
 
-
     def downloadWebPage(self, url):
         """ 
-         Method creates the html soup from the given url. 
-         It creates an instance of the hmtlLocalizer variable and invokes its methods to download the css and object links. It updates
-         the html text and outputs a local html file. 
+        Returns filename that... shaikus can you write this sentence. not actually sure what/why this returns something lol 
+        Method creates html soup from a parsed in url. It creates an instance of of the htmlLocalizer class and retrieves a list 
+        of css, js and media files to be downloading. These files are then downloaded in parallel using the concurrent.futures lib. (A thread is created for each file in the list). 
+        The html soup is updated with all embeded object links to point to the local saved data. Html soup is then saved into a local html file. 
         """
         print(f'Downloading {url}')
         htmlSoup = bSoup(requests.Session().get(
@@ -43,34 +43,23 @@ class webScraper():
 
         cssFiles = localizeContent.getAndReplaceCSS()
         jsFiles = localizeContent.getAndReplaceJS()
+        mediaFiles = localizeContent.getAllMediaLists()
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
+            print("Downloading CSS files...")
             executor.map(localizeContent.downloadUrlContent, cssFiles)
+
+            print("Downloading JS files...")
             executor.map(localizeContent.downloadUrlContent, jsFiles)
+
+            print("Downloading Media files...")
+            executor.map(localizeContent.downloadMedia, mediaFiles)
         
-        """
-        localizeContent.downloadCSS()
-        localizeContent.downloadScripts()
+        localizeContent.replaceAllMedia()
 
-        images = localizeContent.get_image_list()
-        bgImages = localizeContent.get_bg_image_list()
-        audios = localizeContent.get_audio_list()
-        videos = localizeContent.get_video_list()
-
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            executor.map(localizeContent.download_media, images)
-            executor.map(localizeContent.download_media, bgImages)
-            executor.map(localizeContent.download_media, audios)
-            executor.map(localizeContent.download_media, videos)
-        
-        localizeContent.replaceImg()
-        localizeContent.replaceBgImages()
-        localizeContent.replaceAudio()
-        localizeContent.replaceVideos()
-
-        print("Removing unnecessary forms like login boxes, searches...")
+        print("Removing unnecessary forms such as login boxes, searches...")
         localizeContent.removeForms()
-        """
+    
         currentDateTime = datetime.now().strftime(
             "%m/%d/%Y-%H:%M:%S").replace('/', '-')
         filename = self.basePath+'-'+currentDateTime+".html"
@@ -82,13 +71,11 @@ class webScraper():
         self.createdFiles.append(filename)
         return filename
 
-
-    """
-    Crawls a website for all local webpages (that are on the same domain) and downloads them recursively,
-    until there are no more unique pages.
-    """
-
     def downloadAllWebPages(self):
+        """
+        Crawls a website for all local webpages (that are on the same domain) and downloads them recursively,
+        until there are no more unique pages.
+        """
         print('Starting recursive download...')
         newUrls = deque([self.formatUrl(self.homeUrl)])
 
@@ -117,16 +104,13 @@ class webScraper():
                 self.brokenUrls.add(url)
                 print('Oh no broken link :(')
                 continue
-            
-            
 
-
-    """
-    Converts any string that is designed to describe a web address into a comparable, 
-    standardized format of 'http://example.com
-    """
 
     def formatUrl(self,url):
+        """
+        Converts any string that is designed to describe a web address into a comparable, 
+        standardized format of 'http://example.com
+        """
         formattedUrl = url.replace('www.','')
         formattedUrl = formattedUrl.replace('https','http')
 

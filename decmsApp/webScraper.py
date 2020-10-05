@@ -1,4 +1,5 @@
 import requests
+import concurrent.futures
 from datetime import datetime
 from urllib.parse import urlparse, urljoin, urlsplit
 from zipfile import ZipFile
@@ -41,19 +42,18 @@ class webScraper():
         localizeContent = htmlLocalizer(url, htmlSoup)
         localizeContent.downloadCSS()
         localizeContent.downloadScripts()
-        images = localizeContent.get_image_list()
-        for image in images:
-            localizeContent.download_media(image)
 
+        images = localizeContent.get_image_list()
         bgImages = localizeContent.get_bg_image_list()
-        for image in bgImages:
-            localizeContent.download_media(image)
         audios = localizeContent.get_audio_list()
-        for audio in audios:
-            localizeContent.download_media(audio)
         videos = localizeContent.get_video_list()
-        for video in videos:
-            localizeContent.download_media(video)
+
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            executor.map(localizeContent.download_media, images)
+            executor.map(localizeContent.download_media, bgImages)
+            executor.map(localizeContent.download_media, audios)
+            executor.map(localizeContent.download_media, videos)
+        
         localizeContent.replaceImg()
         localizeContent.replaceBgImages()
         localizeContent.replaceAudio()

@@ -28,7 +28,7 @@ def scrape():
     try:
         wpSiteValidator = wpValidator(url)
         isValid = wpSiteValidator.runWebsiteChecks()
-
+        
         if isValid == False:
             print("Failed WordPress Checks.... Trying Drupal")
             drupSiteValidator = drupalValidator(url)
@@ -37,8 +37,10 @@ def scrape():
             if isValid == False:
                 print("Failed Drupal Checks...")
                 return
-
+        
         scraper = webScraper(url)
+        scraper.downloadWebPage(url) 
+        
         if(allPagesRequested):
                     scraper.downloadAllWebPages()
                     processedUrls = scraper.processedUrls
@@ -48,6 +50,7 @@ def scrape():
         else: 
             scraper.downloadWebPage(url)   
             flash(f'Successfully downloaded: {url}', 'success')
+        
 
     except Exception as e:
         flash(f'Failed to download a snapshot of {url}. Error: {e}', 'danger')

@@ -40,6 +40,15 @@ class webScraper():
             url, headers=self.headers).content, "html.parser")
 
         localizeContent = htmlLocalizer(url, htmlSoup)
+
+        cssFiles = localizeContent.getAndReplaceCSS()
+        jsFiles = localizeContent.getAndReplaceJS()
+
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            executor.map(localizeContent.downloadUrlContent, cssFiles)
+            executor.map(localizeContent.downloadUrlContent, jsFiles)
+        
+        """
         localizeContent.downloadCSS()
         localizeContent.downloadScripts()
 
@@ -61,7 +70,7 @@ class webScraper():
 
         print("Removing unnecessary forms like login boxes, searches...")
         localizeContent.removeForms()
-
+        """
         currentDateTime = datetime.now().strftime(
             "%m/%d/%Y-%H:%M:%S").replace('/', '-')
         filename = self.basePath+'-'+currentDateTime+".html"

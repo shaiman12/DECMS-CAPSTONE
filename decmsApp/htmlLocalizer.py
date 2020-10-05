@@ -105,7 +105,16 @@ class htmlLocalizer:
             links.append(style[start:end])
         return links
 
-
+    def images_from_other_hrefs(self):
+        links = []
+        for element in self.htmlSoup.find_all(href=True):
+            href = element["href"]
+            if ".png" in href or ".jpg" in href or ".jpeg" in href or ".gif" in href or ".JPEG" in href or ".svg" in href:
+                links.append(element)
+        newLinks = []
+        for link in links:
+            newLinks.append(self.link_maker(link))
+        return newLinks
 # Returns a list of all links of videos from a URL
 
     def get_video_list(self):
@@ -125,7 +134,9 @@ class htmlLocalizer:
 
 
     def link_maker(self, mediaItem):
-        if mediaItem.has_attr('data-original'):
+        if mediaItem.has_attr('href'):
+            mediaurl = mediaItem.attrs.get("href")
+        elif mediaItem.has_attr('data-original'):
             mediaurl = mediaItem.attrs.get("data-original")
         else:
             mediaurl = mediaItem.attrs.get("src")
@@ -181,7 +192,9 @@ class htmlLocalizer:
     def replaceMedia(self, media):
         downloadedMedia = os.listdir("media/")
         mediaLink = ""
-        if(media.has_attr('data-original')):
+        if(media.has_attr('href')):
+            mediaLink = media.attrs.get("href")
+        elif(media.has_attr('data-original')):
             mediaLink = media.attrs.get("data-original")
         else:
             mediaLink = media.attrs.get("src")
@@ -224,9 +237,13 @@ class htmlLocalizer:
 
                 element["style"] = strStyle
 
+    def replaceHrefImages(self):
+        for element in self.htmlSoup.find_all(href=True):
+            href = element["href"]
+            if ".png" in href or ".jpg" in href or ".jpeg" in href or ".gif" in href or ".JPEG" in href or ".svg" in href:
+                self.replaceMedia(element)
 
 # replaces all old video urls with the new locally saved versions
-
 
     def replaceVideos(self):
         for video in self.htmlSoup.find_all('source', type='video/mp4'):
@@ -250,6 +267,7 @@ class htmlLocalizer:
 
 # form removal
 
+
     def removeForms(self):
         for form in self.htmlSoup.find_all("form"):
             form.replaceWith('')
@@ -261,9 +279,10 @@ class htmlLocalizer:
         """
         images = self.get_image_list()
         bgImages = self.get_bg_image_list()
+        hrefImages = self.images_from_other_hrefs()
         audios = self.get_audio_list()
         videos = self.get_video_list()
-        mediaList = images+ bgImages + audios + videos
+        mediaList = images + bgImages + audios + videos + hrefImages
         return mediaList
 
     def replaceAllMedia(self):
@@ -272,5 +291,6 @@ class htmlLocalizer:
         """
         self.replaceImg()
         self.replaceBgImages()
+        self.replaceHrefImages()
         self.replaceAudio()
         self.replaceVideos()

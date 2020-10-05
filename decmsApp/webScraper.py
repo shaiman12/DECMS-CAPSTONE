@@ -5,8 +5,7 @@ from urllib.parse import urlparse, urljoin, urlsplit
 from zipfile import ZipFile
 from bs4 import BeautifulSoup as bSoup
 from decmsApp.htmlLocalizer import htmlLocalizer
-from collections import deque  
-
+from collections import deque
 
 
 class webScraper():
@@ -26,7 +25,6 @@ class webScraper():
         self.headers = {'User-Agent': '...', 'referer': 'https://...'}
         self.processedUrls = set()
         self.brokenUrls = set()
-
 
     def downloadWebPage(self, url):
         """ 
@@ -54,12 +52,12 @@ class webScraper():
 
             print("Downloading Media files...")
             executor.map(localizeContent.downloadMedia, mediaFiles)
-        
+
         localizeContent.replaceAllMedia()
 
         print("Removing unnecessary forms such as login boxes, searches...")
         localizeContent.removeForms()
-    
+
         currentDateTime = datetime.now().strftime(
             "%m/%d/%Y-%H:%M:%S").replace('/', '-')
         filename = self.basePath+'-'+currentDateTime+".html"
@@ -79,45 +77,43 @@ class webScraper():
         print('Starting recursive download...')
         newUrls = deque([self.formatUrl(self.homeUrl)])
 
-
-        # process urls one by one until we exhaust the queue 
+        # process urls one by one until we exhaust the queue
         while len(newUrls):
 
-        # print the current url    
+            # print the current url
             try:
                 url = newUrls.popleft()
-                htmlSoup = bSoup(requests.Session().get(url, headers=self.headers).content, "html.parser")
+                htmlSoup = bSoup(requests.Session().get(
+                    url, headers=self.headers).content, "html.parser")
                 self.downloadWebPage(url)
                 self.processedUrls.add(url)
                 for anchorTag in htmlSoup.find_all("a", href=True):
                     currentUrl = self.formatUrl(anchorTag['href'])
-                #If it is explicitely referring to a local page or has a relative path
-                    if self.basePath in currentUrl or currentUrl.startswith('/'):     
+                # If it is explicitely referring to a local page or has a relative path
+                    if self.basePath in currentUrl or currentUrl.startswith('/'):
 
-                        if( (not (currentUrl in self.processedUrls)) & (not (currentUrl in newUrls))):
+                        if((not (currentUrl in self.processedUrls)) & (not (currentUrl in newUrls))):
 
                             newUrls.append(self.formatUrl(currentUrl))
 
-
-            except(requests.exceptions.MissingSchema, requests.exceptions.ConnectionError, requests.exceptions.InvalidURL, requests.exceptions.InvalidSchema):    
-                # Add broken urls to it’s own set, then continue    
+            except(requests.exceptions.MissingSchema, requests.exceptions.ConnectionError, requests.exceptions.InvalidURL, requests.exceptions.InvalidSchema):
+                # Add broken urls to it’s own set, then continue
                 self.brokenUrls.add(url)
                 print('Oh no broken link :(')
                 continue
 
-
-    def formatUrl(self,url):
+    def formatUrl(self, url):
         """
         Converts any string that is designed to describe a web address into a comparable, 
         standardized format of 'http://example.com
         """
-        formattedUrl = url.replace('www.','')
-        formattedUrl = formattedUrl.replace('https','http')
+        formattedUrl = url.replace('www.', '')
+        formattedUrl = formattedUrl.replace('https', 'http')
 
         if formattedUrl.startswith('/'):
             formattedUrl = "http://"+self.basePath + formattedUrl
         if formattedUrl.endswith('/'):
             formattedUrl = formattedUrl[:len(formattedUrl)-1]
         if not 'http' in formattedUrl:
-            formattedUrl='http://'+formattedUrl
+            formattedUrl = 'http://'+formattedUrl
         return formattedUrl

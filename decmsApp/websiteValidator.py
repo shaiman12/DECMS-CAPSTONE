@@ -56,6 +56,7 @@ class wpValidator(websiteValidator):
                 url = wpContent["href"]
                 if url.find("wp-") != -1:
                     print("This is a WordPress website! It has WP content")
+                    
                     return True
 
             print("This isn't a WordPress Website!")

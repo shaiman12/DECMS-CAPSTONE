@@ -132,6 +132,7 @@ class htmlLocalizer:
 
 # Formats a link into correct form for downloading
 
+
     def link_maker(self, mediaItem):
         if mediaItem.has_attr('href'):
             mediaurl = mediaItem.attrs.get("href")
@@ -152,7 +153,6 @@ class htmlLocalizer:
 
 
 # Returns a list of all links of videos from a URL
-
 
     def get_audio_list(self):
         links = []
@@ -180,7 +180,6 @@ class htmlLocalizer:
 
 
 # replaces all old image urls with the new locally saved versions
-
 
     def replaceImg(self):
         for image in self.htmlSoup.find_all("img"):
@@ -257,7 +256,6 @@ class htmlLocalizer:
 
 # replaces all old audio urls with the new locally saved versions
 
-
     def replaceAudio(self):
         downloadedMedia = os.listdir("media/")
 
@@ -268,6 +266,7 @@ class htmlLocalizer:
 
 
 # form removal
+
 
     def removeForms(self):
         for form in self.htmlSoup.find_all("form"):
@@ -280,9 +279,10 @@ class htmlLocalizer:
         """
         images = self.get_image_list()
         bgImages = self.get_bg_image_list()
+        hrefImages = self.images_from_other_hrefs()
         audios = self.get_audio_list()
         videos = self.get_video_list()
-        mediaList = images+ bgImages + audios + videos
+        mediaList = images + bgImages + audios + videos + hrefImages
         return mediaList
 
     def replaceAllMedia(self):
@@ -291,5 +291,6 @@ class htmlLocalizer:
         """
         self.replaceImg()
         self.replaceBgImages()
+        self.replaceHrefImages()
         self.replaceAudio()
         self.replaceVideos()

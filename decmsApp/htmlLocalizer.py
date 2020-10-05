@@ -21,59 +21,66 @@ class htmlLocalizer:
         self.imagelinklist = []
         self.htmlSoup = htmlSoup
 
-    def downloadCSS(self):
+    def getAndReplaceCSS(self):
         """
-        Method traverses soup for for link tags and finds those with css hrefs. It obtains the url and makes a get request in order
-        to get the contents of the css file. It creates a new file name and replaces the old file name in the soup. It then creates a new
-        directory and locally saves the css files.
+         Returns 2xN array with the css url and its pair new file name as its contents 
+         Method traverses soup for for link tags and finds those with script hrefs. It creates a new file name 
+         and replaces the old file name in the soup. Both the original url and new file name is appended to a list.
         """
+        cssLinks = []
         count = 0
-        print('Extracting css...')
+        print('Getting list of css files ...')
         for cssFile in self.htmlSoup.find_all("link"):
             if cssFile.attrs.get("href") and '.css' in cssFile['href']:
 
                 completeCssUrl = urljoin(self.url, cssFile.attrs.get("href"))
-                fileContent = requests.get(completeCssUrl)
 
                 # Renames the url in the html Soup
                 newFileName = "css/Static_Styling_" + str(count) + ".css"
                 cssFile['href'] = newFileName
 
-                ########### This creates a new file directory from scratch. #########
-                os.makedirs(os.path.dirname(newFileName), exist_ok=True)
+                fileNames = [completeCssUrl, newFileName]
+                cssLinks.append(fileNames)
+                count += 1
 
-                localCSSFile = open(cssFile['href'], "w")
-                localCSSFile.write(fileContent.text)
-                localCSSFile.close
-                count = count + 1
-        print(f'Successfully extracted {count} css files...')
+        return cssLinks
 
-    def downloadScripts(self):
+    def getAndReplaceJS(self):
         """
-        Method traverses soup for for link tags and finds those with script hrefs. It obtains the url and makes a get request in order
-        to get the contents of the js file. It creates a new file name and replaces the old file name in the soup. It then creates a new
-        directory and locally saves the js files.
+         Returns 2xN array with the js url and its pair new file name as its contents 
+         Method traverses soup for for script tags and finds those with src attributes. It creates a new file name 
+         and replaces the old file name in the soup. Both the original url and new file name is appended to a list.
         """
+        jsLinks = []
         count = 0
-        print('Extracting scripts...')
+        print('Getting list of js files ...')
         for jsFile in self.htmlSoup.find_all("script"):
             if jsFile.attrs.get("src") and '.js' in jsFile['src']:
 
                 completeJsUrl = urljoin(self.url, jsFile.attrs.get("src"))
-                fileContent = requests.get(completeJsUrl)
 
                 # Renames the url in the html Soup
                 newFileName = "js/Script_" + str(count) + ".js"
                 jsFile['src'] = newFileName
 
-                ########### This creates a new file directory from scratch. #########
-                os.makedirs(os.path.dirname(newFileName), exist_ok=True)
+                fileNames = [completeJsUrl, newFileName]
+                jsLinks.append(fileNames)
+                count += 1
 
-                localJSFile = open(jsFile['src'], "w")
-                localJSFile.write(fileContent.text)
-                localJSFile.close
-                count = count + 1
-        print(f'Successfully extracted {count} js files...')
+        return jsLinks
+
+    def downloadUrlContent(self, listOfFiles):
+        """
+        Method receives a 2xN array. The first element contains a url in which the request lib retrieves its contents. The second element
+        contains the local file name in which the content is saved. 
+        """
+        fileContent = requests.get(listOfFiles[0])
+
+        os.makedirs(os.path.dirname(listOfFiles[1]), exist_ok=True)
+
+        localFile = open(listOfFiles[1], "w")
+        localFile.write(fileContent.text)
+        localFile.close
 
     def get_image_list(self):
         links = []
@@ -160,14 +167,16 @@ class htmlLocalizer:
 
 # Receives a URL and downloads the file locally
 
-    def download_media(self, media_url):
+    def downloadMedia(self, media_url):
 
         filename = "media/"+media_url.split("/")[-1]
-        r = requests.get(media_url, stream=True)
-        if r.status_code == 200:
-            r.raw.decode_content = True
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+
+        mediaContent = requests.get(media_url, stream=True)
+        if mediaContent.status_code == 200:
+            mediaContent.raw.decode_content = True
             with open(filename, 'wb') as f:
-                shutil.copyfileobj(r.raw, f)
+                shutil.copyfileobj(mediaContent.raw, f)
 
 
 # replaces all old image urls with the new locally saved versions
@@ -263,3 +272,24 @@ class htmlLocalizer:
     def removeForms(self):
         for form in self.htmlSoup.find_all("form"):
             form.replaceWith('')
+
+    def getAllMediaLists(self):
+        """
+        Returns single list containing all media urls to be downloaded. 
+        Method makes get {media} list methods within localizer class.
+        """
+        images = self.get_image_list()
+        bgImages = self.get_bg_image_list()
+        audios = self.get_audio_list()
+        videos = self.get_video_list()
+        mediaList = images+ bgImages + audios + videos
+        return mediaList
+
+    def replaceAllMedia(self):
+        """
+        Method makes use of all replace 'media' methods for cleaner code. 
+        """
+        self.replaceImg()
+        self.replaceBgImages()
+        self.replaceAudio()
+        self.replaceVideos()

@@ -90,8 +90,7 @@ class webScraper():
         # print the current url    
             try:
                 url = newUrls.popleft()
-                htmlSoup = bSoup(requests.Session().get(
-                url, headers=self.headers).content, "html.parser")
+                htmlSoup = bSoup(requests.Session().get(url, headers=self.headers).content, "html.parser")
                 self.downloadWebPage(url)
                 self.processedUrls.add(url)
                 for anchorTag in htmlSoup.find_all("a", href=True):

@@ -10,8 +10,18 @@ class TestWebsiteValidator(unittest.TestCase):
         result = websiteValidator(offlineSite).isUrlValid()
         self.assertFalse(result)
 
+        #invalid url
+        offlineSite = "https://techcrunch.co"
+        result = websiteValidator(offlineSite).isUrlValid()
+        self.assertFalse(result)
+
         #valid url
         onlineSite = "https://www.reddbar.com/"
+        result = websiteValidator(onlineSite).isUrlValid()
+        self.assertTrue(result)
+
+        #valid url
+        onlineSite = "https://techcrunch.com/"
         result = websiteValidator(onlineSite).isUrlValid()
         self.assertTrue(result)
 
@@ -22,8 +32,18 @@ class TestWebsiteValidator(unittest.TestCase):
         result = wpValidator(otherSite).isWordPressSite()
         self.assertFalse(result)
 
+        #other url
+        otherSite = "https://sports.sportingbet.co.za/en/sports?q=1"
+        result = wpValidator(otherSite).isWordPressSite()
+        self.assertFalse(result)
+
         #wordpress url
         wpSite = "https://techcrunch.com/"
+        result = wpValidator(wpSite).isWordPressSite()
+        self.assertTrue(result)
+
+        #wordpress url
+        wpSite = "https://www.angrybirds.com/"
         result = wpValidator(wpSite).isWordPressSite()
         self.assertTrue(result)
 
@@ -34,8 +54,18 @@ class TestWebsiteValidator(unittest.TestCase):
         result = drupalValidator(otherSite).isDrupalSite()
         self.assertFalse(result)
 
+        #other url
+        otherSite = "https://www.katyperry.com/"
+        result = drupalValidator(otherSite).isDrupalSite()
+        self.assertFalse(result)
+
         #drupal url
         drupalSite = "https://www.arsenal.com/"
+        result = drupalValidator(drupalSite).isDrupalSite()
+        self.assertTrue(result)
+
+        #drupal url
+        drupalSite = "https://www.tesla.com/"
         result = drupalValidator(drupalSite).isDrupalSite()
         self.assertTrue(result)
 

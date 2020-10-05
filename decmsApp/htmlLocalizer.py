@@ -21,7 +21,7 @@ class htmlLocalizer:
         self.imagelinklist = []
         self.htmlSoup = htmlSoup
 
-    def downloadCSS(self):
+    def downloadCSS(self, directory="css/"):
         """
         Method traverses soup for for link tags and finds those with css hrefs. It obtains the url and makes a get request in order
         to get the contents of the css file. It creates a new file name and replaces the old file name in the soup. It then creates a new
@@ -36,7 +36,7 @@ class htmlLocalizer:
                 fileContent = requests.get(completeCssUrl)
 
                 # Renames the url in the html Soup
-                newFileName = "css/Static_Styling_" + str(count) + ".css"
+                newFileName = directory +"Static_Styling_" + str(count) + ".css"
                 cssFile['href'] = newFileName
 
                 ########### This creates a new file directory from scratch. #########
@@ -48,7 +48,7 @@ class htmlLocalizer:
                 count = count + 1
         print(f'Successfully extracted {count} css files...')
 
-    def downloadScripts(self):
+    def downloadScripts(self, directory="js/"):
         """
         Method traverses soup for for link tags and finds those with script hrefs. It obtains the url and makes a get request in order
         to get the contents of the js file. It creates a new file name and replaces the old file name in the soup. It then creates a new
@@ -63,7 +63,7 @@ class htmlLocalizer:
                 fileContent = requests.get(completeJsUrl)
 
                 # Renames the url in the html Soup
-                newFileName = "js/Script_" + str(count) + ".js"
+                newFileName = directory+"/Script_" + str(count) + ".js"
                 jsFile['src'] = newFileName
 
                 ########### This creates a new file directory from scratch. #########
@@ -75,17 +75,18 @@ class htmlLocalizer:
                 count = count + 1
         print(f'Successfully extracted {count} js files...')
 
-    def get_image_list(self):
+    def getImageList(self):
         links = []
         print('Getting list of images...')
-        for image in self.htmlSoup.find_all("img"):
-            if(self.link_maker(image) == ""):
+        images = self.htmlSoup.find_all("img")
+        for image in images:
+            if(self.linkMaker(image) == ""):
                 continue
             else:
-                links.append(self.link_maker(image))
+                links.append(self.linkMaker(image))
         return links
 
-    def get_bg_image_list(self):
+    def getBGImgList(self):
         print('Getting list of background images...')
         links = []
         styles = []
@@ -101,23 +102,23 @@ class htmlLocalizer:
 
 # Returns a list of all links of videos from a URL
 
-    def get_video_list(self):
+    def getVideoList(self):
         links = []
         print('Getting list of videos...')
 
         for video in self.htmlSoup.find_all('source', type='video/ogg'):
-            links.append(self.link_maker(video))
+            links.append(self.linkMaker(video))
         for video in self.htmlSoup.find_all('source', type='video/mp4'):
-            links.append(self.link_maker(video))
+            links.append(self.linkMaker(video))
         for video in self.htmlSoup.find_all('source', type='video/webm'):
-            links.append(self.link_maker(video))
+            links.append(self.linkMaker(video))
         return links
 
 
 # Formats a link into correct form for downloading
 
 
-    def link_maker(self, mediaItem):
+    def linkMaker(self, mediaItem):
         if mediaItem.has_attr('data-original'):
             mediaurl = mediaItem.attrs.get("data-original")
         else:
@@ -136,22 +137,23 @@ class htmlLocalizer:
 
 # Returns a list of all links of videos from a URL
 
-    def get_audio_list(self):
+    def getAudioList(self):
         links = []
         print('Getting list of audio files...')
 
         for audio in self.htmlSoup.find_all('source', type='audio/ogg'):
-            links.append(self.link_maker(audio))
+            links.append(self.linkMaker(audio))
         for audio in self.htmlSoup.find_all('source', type='audio/mpeg'):
-            links.append(self.link_maker(audio))
+            links.append(self.linkMaker(audio))
 
         return links
 
 # Receives a URL and downloads the file locally
 
-    def download_media(self, media_url):
+    def downloadMedia(self, media_url, directory="media/"):
+        os.makedirs(os.path.dirname(directory), exist_ok=True)
 
-        filename = "media/"+media_url.split("/")[-1]
+        filename = directory+media_url.split("/")[-1]
         r = requests.get(media_url, stream=True)
         if r.status_code == 200:
             r.raw.decode_content = True

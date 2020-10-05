@@ -41,19 +41,19 @@ class webScraper():
         localizeContent = htmlLocalizer(url, htmlSoup)
         localizeContent.downloadCSS()
         localizeContent.downloadScripts()
-        images = localizeContent.get_image_list()
+        images = localizeContent.getImageList()
         for image in images:
-            localizeContent.download_media(image)
+            localizeContent.downloadMedia(image)
 
-        bgImages = localizeContent.get_bg_image_list()
+        bgImages = localizeContent.getBGImgList()
         for image in bgImages:
-            localizeContent.download_media(image)
-        audios = localizeContent.get_audio_list()
+            localizeContent.downloadMedia(image)
+        audios = localizeContent.getAudioList()
         for audio in audios:
-            localizeContent.download_media(audio)
-        videos = localizeContent.get_video_list()
+            localizeContent.downloadMedia(audio)
+        videos = localizeContent.getVideoList()
         for video in videos:
-            localizeContent.download_media(video)
+            localizeContent.downloadMedia(video)
         localizeContent.replaceImg()
         localizeContent.replaceBgImages()
         localizeContent.replaceAudio()

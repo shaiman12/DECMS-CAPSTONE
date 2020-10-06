@@ -40,6 +40,7 @@ def scrape():
                 return
         
         scraper = webScraper(url)
+        
         if(allPagesRequested):
                     scraper.downloadAllWebPages()
                     processedUrls = scraper.processedUrls

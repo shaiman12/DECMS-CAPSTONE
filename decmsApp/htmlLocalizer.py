@@ -12,7 +12,7 @@ class htmlLocalizer:
     embeded object links from the html soup.
     """
 
-    def __init__(self, url, htmlSoup):
+    def __init__(self, url, htmlSoup, directory):
         """
         Constructor class.
         """
@@ -20,6 +20,7 @@ class htmlLocalizer:
         self.imgPath = "imgs"
         self.imagelinklist = []
         self.htmlSoup = htmlSoup
+        self.directory = directory 
 
     def getAndReplaceCSS(self):
         """
@@ -36,7 +37,7 @@ class htmlLocalizer:
                 completeCssUrl = urljoin(self.url, cssFile.attrs.get("href"))
 
                 # Renames the url in the html Soup
-                newFileName = "css/Static_Styling_" + str(count) + ".css"
+                newFileName = os.path.join(self.directory, "css/Static_Styling_" + str(count) + ".css")
                 cssFile['href'] = newFileName
 
                 fileNames = [completeCssUrl, newFileName]
@@ -60,7 +61,7 @@ class htmlLocalizer:
                 completeJsUrl = urljoin(self.url, jsFile.attrs.get("src"))
 
                 # Renames the url in the html Soup
-                newFileName = "js/Script_" + str(count) + ".js"
+                newFileName = os.path.join(self.directory,"js/Script_" + str(count) + ".js")
                 jsFile['src'] = newFileName
 
                 fileNames = [completeJsUrl, newFileName]
@@ -158,7 +159,7 @@ class htmlLocalizer:
 
     def downloadMedia(self, media_url):
 
-        filename = "media/"+media_url.split("/")[-1]
+        filename = os.path.join(self.directory,"media/"+media_url.split("/")[-1])
         os.makedirs(os.path.dirname(filename), exist_ok=True)
 
         mediaContent = requests.get(media_url, stream=True)
@@ -179,7 +180,7 @@ class htmlLocalizer:
 # Using the html soup, this method replaces the old media url with the new locally saved version
 
     def replaceMedia(self, media):
-        downloadedMedia = os.listdir("media/")
+        downloadedMedia = os.listdir(self.directory+"/media/")
         mediaLink = ""
         if(media.has_attr('data-original')):
             mediaLink = media.attrs.get("data-original")
@@ -194,13 +195,13 @@ class htmlLocalizer:
         try:
             pos = downloadedMedia.index(mediaPart)
             if(pos > -1):
-                media["src"] = "media/"+downloadedMedia[pos]
+                media["src"] = self.directory+"/media/"+downloadedMedia[pos]
 
         except:
             print("Failed replacing image: ", mediaPart)
 
     def replaceBgImages(self):
-        downloadedMedia = os.listdir("media/")
+        downloadedMedia = os.listdir(self.directory+"/media/")
 
         elementsToReplace = []
         for element in self.htmlSoup.find_all(style=True):
@@ -219,7 +220,7 @@ class htmlLocalizer:
             mediaPart = filename+file_ext
             pos = downloadedMedia.index(mediaPart)
             if(pos > -1):
-                toReplace = "media/"+downloadedMedia[pos]
+                toReplace = self.directory+"/media/"+downloadedMedia[pos]
                 strStyle = strStyle.replace(link, toReplace)
 
                 element["style"] = strStyle
@@ -240,8 +241,7 @@ class htmlLocalizer:
 # replaces all old audio urls with the new locally saved versions
 
     def replaceAudio(self):
-        downloadedMedia = os.listdir("media/")
-
+       
         for audio in self.htmlSoup.find_all('source', type='audio/ogg'):
             self.replaceMedia(audio)
         for audio in self.htmlSoup.find_all('source', type='audio/mpeg'):
@@ -270,7 +270,13 @@ class htmlLocalizer:
         """
         Method makes use of all replace 'media' methods for cleaner code. 
         """
+        pathname = self.directory+"/media"
+        os.makedirs(pathname, exist_ok=True)
+
         self.replaceImg()
+
         self.replaceBgImages()
+        
         self.replaceAudio()
+        
         self.replaceVideos()

@@ -113,16 +113,21 @@ class webScraper():
                 print(url)
                 continue
     
-    def shouldIgnoreUrl(self, url, pathsToIgnore):
-                for pathToIgnore in pathsToIgnore:
-                    if pathToIgnore in url:
-                        return True
-                response = requests.Session().get(url, headers=self.headers)
-                contentType = response.headers["content-type"]
-                isHtml = "text/html" in contentType
-                if not(isHtml):
-                    return True
-                return False
+    def shouldIgnoreUrl(self, url, pathsToIgnore, acceptableType="text/html"):
+        """
+        Checks if a url should be ignored according to whether it;
+        A) contains any paths to ignore, or 
+        B) is not of the acceptable content type
+        """
+        for pathToIgnore in pathsToIgnore:
+            if pathToIgnore in url:
+                return True
+        response = requests.Session().get(url, headers=self.headers)
+        contentType = response.headers["content-type"]
+        isAcceptable = acceptableType in contentType
+        if not(isAcceptable):
+            return True
+        return False
     
                                     
     def formatUrl(self, url):

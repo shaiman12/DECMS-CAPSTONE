@@ -69,6 +69,3 @@ class TestWebsiteValidator(unittest.TestCase):
     #     result = drupalValidator(drupalSite).isDrupalSite()
     #     self.assertTrue(result)
 
-    def test_isWebPage(self):
-        scraper = webScraper('http://prettycasual.co.za')
-        scraper.getWebPageIfWebPage("http://prettycasual.co.za/cdn-cgi/l/email-protection#254f4056566555574051515c4644565044490b464a0b5f44")

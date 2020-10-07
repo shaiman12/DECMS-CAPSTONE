@@ -90,9 +90,8 @@ class webScraper():
             # print the current url
             try:
                 url = newUrls.popleft()
-                ignoreUrl = False;
                 response = requests.Session().get(url, headers=self.headers)
-                print(f'{url} is of type {response.headers["content-type"]}')
+
                 htmlSoup = bSoup(response.content, "html.parser")
                 # self.downloadWebPage(url)
                 self.processedUrls.add(url)
@@ -101,13 +100,10 @@ class webScraper():
                     formattedBasePath = self.formatUrl(self.basePath)
                 # If it is explicitely referring to a local page or has a relative path
                     if formattedBasePath in currentUrl or currentUrl.startswith('/'):
-                        if((not (currentUrl in self.processedUrls)) & (not (currentUrl in newUrls))):
-                            for pathToIgnore in pathsToIgnore:
-                                if pathToIgnore in currentUrl:
-                                    ignoreUrl=True
-                                    print(f'ignoring {currentUrl}')
-                                    break
-                            if not ignoreUrl: newUrls.append(self.formatUrl(currentUrl))
+                        ignoreUrl = self.shouldIgnoreUrl(currentUrl, pathsToIgnore)
+                        #confirm we haven't processed the url, it's not in the queue to be processed and we shouldn't ignore it
+                        if (not ignoreUrl) & (not((currentUrl in self.processedUrls))) & (not (currentUrl in newUrls)) :
+                            newUrls.append(self.formatUrl(currentUrl))
                         
 
             except(requests.exceptions.MissingSchema, requests.exceptions.ConnectionError, requests.exceptions.InvalidURL, requests.exceptions.InvalidSchema):
@@ -116,7 +112,19 @@ class webScraper():
                 print('Oh no broken link :(')
                 print(url)
                 continue
-
+    
+    def shouldIgnoreUrl(self, url, pathsToIgnore):
+                for pathToIgnore in pathsToIgnore:
+                    if pathToIgnore in url:
+                        return True
+                response = requests.Session().get(url, headers=self.headers)
+                contentType = response.headers["content-type"]
+                isHtml = "text/html" in contentType
+                if not(isHtml):
+                    return True
+                return False
+    
+                                    
     def formatUrl(self, url):
         """
         Converts any string that is designed to describe a web address into a comparable, 
@@ -133,6 +141,3 @@ class webScraper():
             formattedUrl = 'http://'+formattedUrl
         return formattedUrl
 
-    def getWebPageIfWebPage(self, link, strict=True):
-        response = requests.Session().get(link, headers=self.headers)
-        print(f'STATUS CODEEEE: {response.headers}')

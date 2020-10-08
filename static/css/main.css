@@ -1,0 +1,28 @@
+
+
+.everything{
+  background-color: white;
+  justify-content: center;
+
+    margin: auto;
+    text-align: center;
+}
+
+.box{
+  
+  margin-top: -25px;
+  width: 100%;
+  text-align: center;
+}
+
+.card{
+  background-color: #ebfafc
+}
+
+#loading{
+  padding-top: 30px;
+      margin: auto;
+    text-align: center;
+  height: 30%;
+  width: 30%;
+}

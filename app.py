@@ -1,4 +1,5 @@
 from flask import Flask, render_template, url_for, request, flash, send_file, redirect
+
 from decmsApp.webScraper import webScraper
 from decmsApp.websiteValidator import *
 import traceback

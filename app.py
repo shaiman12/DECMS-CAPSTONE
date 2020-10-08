@@ -1,6 +1,7 @@
 from flask import Flask, render_template, url_for, request, flash, send_file, redirect
 from decmsApp.webScraper import webScraper
 from decmsApp.websiteValidator import *
+import traceback
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "b5121df8bab03d4d38d2ebf2c08eebad"
@@ -55,6 +56,7 @@ def scrape():
     except Exception as e:
         flash(f'Failed to download a snapshot of {url}. Error: {e}', 'danger')
         print(e)
+        traceback.print_exc()
 
     finally:
         return redirect(url_for('home'))

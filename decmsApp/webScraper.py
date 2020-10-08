@@ -34,10 +34,10 @@ class webScraper():
         of css, js and media files to be downloading. These files are then downloaded in parallel using the concurrent.futures lib. (A thread is created for each file in the list). 
         The html soup is updated with all embeded object links to point to the local saved data. Html soup is then saved into a local html file. 
         """
-        directory = ""
+        directory = url[7:] 
         if not os.path.exists(url[7:]):
             os.makedirs(url[7:])
-            directory = url[7:] 
+            
 
         print(f'Downloading {url}')
         htmlSoup = bSoup(requests.Session().get(

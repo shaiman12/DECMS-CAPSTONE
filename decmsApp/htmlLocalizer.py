@@ -135,12 +135,15 @@ class htmlLocalizer:
 
 
     def link_maker(self, mediaItem):
+        
         if mediaItem.has_attr('href'):
             mediaurl = mediaItem.attrs.get("href")
         elif mediaItem.has_attr('data-original'):
             mediaurl = mediaItem.attrs.get("data-original")
-        else:
+        elif mediaItem.has_attr('src'):
             mediaurl = mediaItem.attrs.get("src")
+        else:
+            mediaurl = ""
         if mediaurl.find("svg+xml") > -1:
             return ""
         mediaurl = urljoin(self.url, mediaurl)
@@ -197,8 +200,10 @@ class htmlLocalizer:
             mediaLink = media.attrs.get("href")
         elif(media.has_attr('data-original')):
             mediaLink = media.attrs.get("data-original")
-        else:
+        elif(media.has_attr('src')):
             mediaLink = media.attrs.get("src")
+        else:
+            mediaLink = ""
         if mediaLink.find("svg+xml") > -1:
             return ""
         dissasembled = urlparse(mediaLink)
@@ -289,7 +294,7 @@ class htmlLocalizer:
         """
         Method makes use of all replace 'media' methods for cleaner code. 
         """
-        pathname = self.directory+"/media"
+        pathname = os.path.join(self.directory,"media")
         os.makedirs(pathname, exist_ok=True)
 
         self.replaceImg()

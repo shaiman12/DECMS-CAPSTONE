@@ -9,6 +9,7 @@ from decmsApp.htmlLocalizer import htmlLocalizer
 from collections import deque
 import urllib
 import mimetypes
+import pdb
 
 class webScraper():
     """
@@ -46,12 +47,12 @@ class webScraper():
 
         
         localizeContent = htmlLocalizer(url, htmlSoup, directory)
-
+        
         cssFiles = localizeContent.getAndReplaceCSS()
         jsFiles = localizeContent.getAndReplaceJS()
         mediaFiles = localizeContent.getAllMediaLists()
-
-        with concurrent.futures.ThreadPoolExecutor() as executor:
+       
+        with concurrent.futures.ThreadPoolExecutor(max_workers = 20) as executor:
             print("Downloading CSS files...")
             executor.map(localizeContent.downloadUrlContent, cssFiles)
 
@@ -59,12 +60,14 @@ class webScraper():
             executor.map(localizeContent.downloadUrlContent, jsFiles)
 
             print("Downloading Media files...")
-            executor.map(localizeContent.downloadMedia, mediaFiles)
-
+            executor.map(localizeContent.downloadMedia, mediaFiles, timeout = 300)
+            
+            print("Removing unnecessary forms such as login boxes, searches...")
+            #executor.map(localizeContent.removeForms())
+           
+        
         localizeContent.replaceAllMedia()
-
-        print("Removing unnecessary forms such as login boxes, searches...")
-        localizeContent.removeForms()
+        
         currentDateTime = datetime.now().strftime(
             "%m/%d/%Y-%H:%M:%S").replace('/', '-')
         filename = os.path.join(directory, url[url.rfind("/")+1:] + currentDateTime+".html")
@@ -93,7 +96,7 @@ class webScraper():
                 response = requests.Session().get(url, headers=self.headers)
 
                 htmlSoup = bSoup(response.content, "html.parser")
-                # self.downloadWebPage(url)
+                self.downloadWebPage(url)
                 self.processedUrls.add(url)
                 for anchorTag in htmlSoup.find_all("a", href=True):
                     currentUrl = self.formatUrl(anchorTag['href'])
@@ -104,7 +107,7 @@ class webScraper():
                         #confirm we haven't processed the url, it's not in the queue to be processed and we shouldn't ignore it
                         if (not ignoreUrl) & (not((currentUrl in self.processedUrls))) & (not (currentUrl in newUrls)) :
                             newUrls.append(self.formatUrl(currentUrl))
-                        
+                
 
             except(requests.exceptions.MissingSchema, requests.exceptions.ConnectionError, requests.exceptions.InvalidURL, requests.exceptions.InvalidSchema):
                 # Add broken urls to it’s own set, then continue

@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup as bSoup
 from urllib.parse import urljoin, urlparse
 import shutil
 from cssutils import parseStyle
+import pdb
 
 
 class htmlLocalizer:
@@ -21,6 +22,7 @@ class htmlLocalizer:
         self.imagelinklist = []
         self.htmlSoup = htmlSoup
         self.directory = directory 
+        self.headers = {'User-Agent': '...', 'referer': 'https://...'}
 
     def getAndReplaceCSS(self):
         """
@@ -75,7 +77,7 @@ class htmlLocalizer:
         Method receives a 2xN array. The first element contains a url in which the request lib retrieves its contents. The second element
         contains the local file name in which the content is saved. 
         """
-        fileContent = requests.get(listOfFiles[0])
+        fileContent = requests.get(listOfFiles[0], headers = self.headers)
 
         os.makedirs(os.path.dirname(listOfFiles[1]), exist_ok=True)
 
@@ -85,12 +87,14 @@ class htmlLocalizer:
 
     def get_image_list(self):
         links = []
+       
         print('Getting list of images...')
         for image in self.htmlSoup.find_all("img"):
             if(self.link_maker(image) == ""):
                 continue
             else:
                 links.append(self.link_maker(image))
+        
         return links
 
     def get_bg_image_list(self):
@@ -142,13 +146,16 @@ class htmlLocalizer:
             mediaurl = mediaItem.attrs.get("data-original")
         elif mediaItem.has_attr('src'):
             mediaurl = mediaItem.attrs.get("src")
+        elif(media.has_attr('data-src')):
+            mediaLink = media.attrs.get("data-src")
         else:
             mediaurl = ""
+            print(mediaItem)
         if mediaurl.find("svg+xml") > -1:
             return ""
         mediaurl = urljoin(self.url, mediaurl)
         try:
-            # removing "?" from imgs
+            # removing "?" from imgs #potential flag
             x = mediaurl.index("?")
             mediaurl = mediaurl[:x]
         except:
@@ -172,11 +179,12 @@ class htmlLocalizer:
 # Receives a URL and downloads the file locally
 
     def downloadMedia(self, media_url):
-
         filename = os.path.join(self.directory,"media/"+media_url.split("/")[-1])
         os.makedirs(os.path.dirname(filename), exist_ok=True)
 
-        mediaContent = requests.get(media_url, stream=True)
+        mediaContent = requests.get(media_url, stream=True, headers = self.headers)
+        #print(mediaContent.status_code)
+        #pdb.set_trace()
         if mediaContent.status_code == 200:
             mediaContent.raw.decode_content = True
             with open(filename, 'wb') as f:
@@ -190,21 +198,30 @@ class htmlLocalizer:
             if self.replaceMedia(image) == "":
                 continue
             self.replaceMedia(image)
+            
 
 # Using the html soup, this method replaces the old media url with the new locally saved version
 
     def replaceMedia(self, media):
-        downloadedMedia = os.listdir(self.directory+"/media/")
+        
+        downloadedMedia = os.listdir(os.path.join(self.directory,"media/"))
         mediaLink = ""
         if(media.has_attr('href')):
             mediaLink = media.attrs.get("href")
+            attType = "href"
         elif(media.has_attr('data-original')):
             mediaLink = media.attrs.get("data-original")
+            attType = "data-original"
         elif(media.has_attr('src')):
             mediaLink = media.attrs.get("src")
+            attType = "src"
+        elif(media.has_attr('data-src')):
+            mediaLink = media.attrs.get("data-src")
+            attType = "data-src"
         else:
+            print(media)
             mediaLink = ""
-        if mediaLink.find("svg+xml") > -1:
+        if (mediaLink.find("svg+xml") > -1) or (mediaLink == ""):
             return ""
         dissasembled = urlparse(mediaLink)
         filename, file_ext = os.path.splitext(
@@ -213,10 +230,11 @@ class htmlLocalizer:
         try:
             pos = downloadedMedia.index(mediaPart)
             if(pos > -1):
-                media["src"] = self.directory+"/media/"+downloadedMedia[pos]
+                media[attType] = self.directory+"/media/"+downloadedMedia[pos]
 
-        except:
+        except Exception as e:
             print("Failed replacing image: ", mediaPart)
+            print(e)
 
     def replaceBgImages(self):
         downloadedMedia = os.listdir(self.directory+"/media/")
@@ -285,20 +303,22 @@ class htmlLocalizer:
         images = self.get_image_list()
         bgImages = self.get_bg_image_list()
         hrefImages = self.images_from_other_hrefs()
-        audios = self.get_audio_list()
-        videos = self.get_video_list()
-        mediaList = images + bgImages + audios + videos + hrefImages
+        #audios = self.get_audio_list()
+        #videos = self.get_video_list()
+        mediaList = images + bgImages + hrefImages #+ audios + videos
         return mediaList
 
     def replaceAllMedia(self):
         """
         Method makes use of all replace 'media' methods for cleaner code. 
         """
-        pathname = os.path.join(self.directory,"media")
+        pathname = os.path.join(self.directory,"media/")
         os.makedirs(pathname, exist_ok=True)
 
         self.replaceImg()
         self.replaceBgImages()
         self.replaceHrefImages()
+        """
         self.replaceAudio()
         self.replaceVideos()
+        """

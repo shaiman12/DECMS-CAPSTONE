@@ -28,7 +28,7 @@ def scrape():
     allPagesRequested = request.args.get('all-pages') == 'on'
 
     try:
-
+        
         wpSiteValidator = wpValidator(url)
         isValid = wpSiteValidator.runWebsiteChecks()
 
@@ -36,11 +36,10 @@ def scrape():
             print("Failed WordPress Checks.... Trying Drupal")
             drupSiteValidator = drupalValidator(url)
             isValid = drupSiteValidator.runWebsiteChecks()
-            print(isValid)
             if isValid == False:
                 print("Failed Drupal Checks...")
                 return
-
+        
         scraper = webScraper(url)
         
         if(allPagesRequested):

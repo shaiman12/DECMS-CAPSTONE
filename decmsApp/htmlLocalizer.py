@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup as bSoup
 from urllib.parse import urljoin, urlparse
 import shutil
 from cssutils import parseStyle
+import pdb
 
 
 class htmlLocalizer:
@@ -21,6 +22,7 @@ class htmlLocalizer:
         self.imagelinklist = []
         self.htmlSoup = htmlSoup
         self.directory = directory 
+        self.headers = {'User-Agent': '...', 'referer': 'https://...'}
 
     def getAndReplaceCSS(self):
         """
@@ -37,7 +39,7 @@ class htmlLocalizer:
                 completeCssUrl = urljoin(self.url, cssFile.attrs.get("href"))
 
                 # Renames the url in the html Soup
-                newFileName = os.path.join(self.directory, "css/Static_Styling_" + str(count) + ".css")
+                newFileName = os.path.join(self.directory, "css/staticStyling_" + str(count) + ".css")
                 cssFile['href'] = newFileName
 
                 fileNames = [completeCssUrl, newFileName]
@@ -75,7 +77,7 @@ class htmlLocalizer:
         Method receives a 2xN array. The first element contains a url in which the request lib retrieves its contents. The second element
         contains the local file name in which the content is saved. 
         """
-        fileContent = requests.get(listOfFiles[0])
+        fileContent = requests.get(listOfFiles[0], headers = self.headers)
 
         os.makedirs(os.path.dirname(listOfFiles[1]), exist_ok=True)
 
@@ -83,17 +85,19 @@ class htmlLocalizer:
         localFile.write(fileContent.text)
         localFile.close
 
-    def get_image_list(self):
+    def getImageList(self):
         links = []
+       
         print('Getting list of images...')
         for image in self.htmlSoup.find_all("img"):
-            if(self.link_maker(image) == ""):
+            if(self.linkMaker(image) == ""):
                 continue
             else:
-                links.append(self.link_maker(image))
+                links.append(self.linkMaker(image))
+        
         return links
 
-    def get_bg_image_list(self):
+    def getBgImageList(self):
         print('Getting list of background images...')
         links = []
         styles = []
@@ -106,7 +110,7 @@ class htmlLocalizer:
             links.append(style[start:end])
         return links
 
-    def images_from_other_hrefs(self):
+    def imagesFromOtherHrefs(self):
         links = []
         for element in self.htmlSoup.find_all(href=True):
             href = element["href"]
@@ -114,69 +118,53 @@ class htmlLocalizer:
                 links.append(element)
         newLinks = []
         for link in links:
-            newLinks.append(self.link_maker(link))
+            newLinks.append(self.linkMaker(link))
         return newLinks
 # Returns a list of all links of videos from a URL
 
-    def get_video_list(self):
-        links = []
+    def getAudioVideolist(self):
+        audioVideoLinks = []
         print('Getting list of videos...')
 
-        for video in self.htmlSoup.find_all('source', type='video/ogg'):
-            links.append(self.link_maker(video))
-        for video in self.htmlSoup.find_all('source', type='video/mp4'):
-            links.append(self.link_maker(video))
-        for video in self.htmlSoup.find_all('source', type='video/webm'):
-            links.append(self.link_maker(video))
-        return links
+        for audioVideo in self.htmlSoup.find_all('source', type=['video/ogg','video/mp4','video/webm', 'audio/ogg', 'audio/mpeg']):
+            audioVideoLinks.append(self.linkMaker(audioVideo))
 
+        return audioVideoLinks
 
 # Formats a link into correct form for downloading
 
 
-    def link_maker(self, mediaItem):
-        
+    def linkMaker(self, mediaItem):
+        mediaurl = ""
         if mediaItem.has_attr('href'):
             mediaurl = mediaItem.attrs.get("href")
         elif mediaItem.has_attr('data-original'):
             mediaurl = mediaItem.attrs.get("data-original")
         elif mediaItem.has_attr('src'):
             mediaurl = mediaItem.attrs.get("src")
+        elif(mediaItem.has_attr('data-src')):
+            mediaLink = mediaItem.attrs.get("data-src")
         else:
             mediaurl = ""
-        if mediaurl.find("svg+xml") > -1:
+            print(mediaItem)
+        if mediaurl.find("svg+xml") > -1 or mediaurl == "":
             return ""
         mediaurl = urljoin(self.url, mediaurl)
         try:
-            # removing "?" from imgs
+            # removing "?" from imgs #potential flag
             x = mediaurl.index("?")
             mediaurl = mediaurl[:x]
         except:
             pass
         return mediaurl
 
-
-# Returns a list of all links of videos from a URL
-
-    def get_audio_list(self):
-        links = []
-        print('Getting list of audio files...')
-
-        for audio in self.htmlSoup.find_all('source', type='audio/ogg'):
-            links.append(self.link_maker(audio))
-        for audio in self.htmlSoup.find_all('source', type='audio/mpeg'):
-            links.append(self.link_maker(audio))
-
-        return links
-
 # Receives a URL and downloads the file locally
 
     def downloadMedia(self, media_url):
-
         filename = os.path.join(self.directory,"media/"+media_url.split("/")[-1])
         os.makedirs(os.path.dirname(filename), exist_ok=True)
 
-        mediaContent = requests.get(media_url, stream=True)
+        mediaContent = requests.get(media_url, stream=True, headers = self.headers)
         if mediaContent.status_code == 200:
             mediaContent.raw.decode_content = True
             with open(filename, 'wb') as f:
@@ -190,21 +178,30 @@ class htmlLocalizer:
             if self.replaceMedia(image) == "":
                 continue
             self.replaceMedia(image)
+            
 
 # Using the html soup, this method replaces the old media url with the new locally saved version
 
     def replaceMedia(self, media):
-        downloadedMedia = os.listdir(self.directory+"/media/")
+        
+        downloadedMedia = os.listdir(os.path.join(self.directory,"media/"))
         mediaLink = ""
         if(media.has_attr('href')):
             mediaLink = media.attrs.get("href")
+            attType = "href"
         elif(media.has_attr('data-original')):
             mediaLink = media.attrs.get("data-original")
+            attType = "data-original"
         elif(media.has_attr('src')):
             mediaLink = media.attrs.get("src")
+            attType = "src"
+        elif(media.has_attr('data-src')):
+            mediaLink = media.attrs.get("data-src")
+            attType = "data-src"
         else:
+            print(media)
             mediaLink = ""
-        if mediaLink.find("svg+xml") > -1:
+        if (mediaLink.find("svg+xml") > -1) or (mediaLink == ""):
             return ""
         dissasembled = urlparse(mediaLink)
         filename, file_ext = os.path.splitext(
@@ -213,10 +210,11 @@ class htmlLocalizer:
         try:
             pos = downloadedMedia.index(mediaPart)
             if(pos > -1):
-                media["src"] = self.directory+"/media/"+downloadedMedia[pos]
+                media[attType] = self.directory+"/media/"+downloadedMedia[pos]
 
-        except:
+        except Exception as e:
             print("Failed replacing image: ", mediaPart)
+            print(e)
 
     def replaceBgImages(self):
         downloadedMedia = os.listdir(self.directory+"/media/")
@@ -251,27 +249,11 @@ class htmlLocalizer:
 
 # replaces all old video urls with the new locally saved versions
 
-    def replaceVideos(self):
-        for video in self.htmlSoup.find_all('source', type='video/mp4'):
-            self.replaceMedia(video)
-        for video in self.htmlSoup.find_all('source', type='video/ogg'):
-            self.replaceMedia(video)
-        for video in self.htmlSoup.find_all('source', type='video/webm'):
-            self.replaceMedia(video)
-
-
-# replaces all old audio urls with the new locally saved versions
-
-    def replaceAudio(self):
-       
-        for audio in self.htmlSoup.find_all('source', type='audio/ogg'):
-            self.replaceMedia(audio)
-        for audio in self.htmlSoup.find_all('source', type='audio/mpeg'):
-            self.replaceMedia(audio)
-
+    def replaceAudioVideos(self):
+        for audioVideo in self.htmlSoup.find_all('source', type=['video/mp4','video/ogg','video/webm', 'audio/ogg', 'audio/mpeg']):
+            self.replaceMedia(audioVideo)
 
 # form removal
-
 
     def removeForms(self):
         for form in self.htmlSoup.find_all("form"):
@@ -282,23 +264,23 @@ class htmlLocalizer:
         Returns single list containing all media urls to be downloaded. 
         Method makes get {media} list methods within localizer class.
         """
-        images = self.get_image_list()
-        bgImages = self.get_bg_image_list()
-        hrefImages = self.images_from_other_hrefs()
-        audios = self.get_audio_list()
-        videos = self.get_video_list()
-        mediaList = images + bgImages + audios + videos + hrefImages
+        images = self.getImageList()
+        bgImages = self.getBgImageList()
+        hrefImages = self.imagesFromOtherHrefs()
+        audioVidio = self.getAudioVideolist()
+        
+        mediaList = images + bgImages + hrefImages + audioVidio
         return mediaList
 
     def replaceAllMedia(self):
         """
         Method makes use of all replace 'media' methods for cleaner code. 
         """
-        pathname = os.path.join(self.directory,"media")
+        pathname = os.path.join(self.directory,"media/")
         os.makedirs(pathname, exist_ok=True)
 
         self.replaceImg()
         self.replaceBgImages()
         self.replaceHrefImages()
-        self.replaceAudio()
-        self.replaceVideos()
+        self.replaceAudioVideos()
+        

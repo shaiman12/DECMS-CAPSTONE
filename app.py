@@ -50,6 +50,7 @@ def scrape():
                 f'Successfully downloaded recursively: {processedUrls} but the following were broken: {brokenUrls}', 'success')
 
         else:
+            url = scraper.formatUrl(url)
             scraper.downloadWebPage(url)
             flash(f'Successfully downloaded: {url}', 'success')
 

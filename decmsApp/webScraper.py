@@ -47,7 +47,7 @@ class webScraper():
 
         
         localizeContent = htmlLocalizer(url, htmlSoup, directory)
-        
+
         cssFiles = localizeContent.getAndReplaceCSS()
         jsFiles = localizeContent.getAndReplaceJS()
         mediaFiles = localizeContent.getAllMediaLists()
@@ -60,14 +60,13 @@ class webScraper():
             executor.map(localizeContent.downloadUrlContent, jsFiles)
 
             print("Downloading Media files...")
-            executor.map(localizeContent.downloadMedia, mediaFiles, timeout = 300)
+            executor.map(localizeContent.downloadMedia, mediaFiles, timeout = 200)
             
             print("Removing unnecessary forms such as login boxes, searches...")
-            #executor.map(localizeContent.removeForms())
-           
+            executor.map(localizeContent.removeForms()) 
         
         localizeContent.replaceAllMedia()
-        
+      
         currentDateTime = datetime.now().strftime(
             "%m/%d/%Y-%H:%M:%S").replace('/', '-')
         filename = os.path.join(directory, url[url.rfind("/")+1:] + currentDateTime+".html")

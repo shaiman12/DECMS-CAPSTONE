@@ -234,7 +234,7 @@ class htmlLocalizer:
                 media[attType] = "media/"+downloadedMedia[pos]
 
         except Exception as e:
-            print("Failed replacing image: ", mediaPart)
+            print("____________________________ Failed replacing image _______________________", mediaPart)
             print(e)
 
     def replaceBgImages(self):

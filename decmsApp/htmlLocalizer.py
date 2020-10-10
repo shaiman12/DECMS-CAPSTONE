@@ -39,8 +39,7 @@ class htmlLocalizer:
                 completeCssUrl = urljoin(self.url, cssFile.attrs.get("href"))
 
                 # Renames the url in the html Soup
-                newFileName = os.path.join(
-                    self.directory, "css/staticStyling_" + str(count) + ".css")
+                newFileName =  "css/staticStyling_" + str(count) + ".css"
                 cssFile['href'] = newFileName
 
                 fileNames = [completeCssUrl, newFileName]
@@ -64,8 +63,7 @@ class htmlLocalizer:
                 completeJsUrl = urljoin(self.url, jsFile.attrs.get("src"))
 
                 # Renames the url in the html Soup
-                newFileName = os.path.join(
-                    self.directory, "js/Script_" + str(count) + ".js")
+                newFileName = "js/Script_" + str(count) + ".js"
                 jsFile['src'] = newFileName
 
                 fileNames = [completeJsUrl, newFileName]
@@ -79,11 +77,11 @@ class htmlLocalizer:
         Method receives a 2xN array. The first element contains a url in which the request lib retrieves its contents. The second element
         contains the local file name in which the content is saved. 
         """
-        fileContent = requests.get(listOfFiles[0], headers=self.headers)
-
-        os.makedirs(os.path.dirname(listOfFiles[1]), exist_ok=True)
-
-        localFile = open(listOfFiles[1], "w")
+        fileContent = requests.get(listOfFiles[0], headers = self.headers)
+        directoryName = os.path.join(self.directory,listOfFiles[1])
+        os.makedirs(os.path.dirname(directoryName), exist_ok=True)
+        
+        localFile = open(directoryName, "w")
         localFile.write(fileContent.text)
         localFile.close
 
@@ -159,7 +157,7 @@ class htmlLocalizer:
             mediaLink = mediaItem.attrs.get("data-src")
         else:
             mediaurl = ""
-            print(mediaItem)
+            #print(mediaItem)
         if mediaurl.find("svg+xml") > -1 or mediaurl == "":
             return ""
         mediaurl = urljoin(self.url, mediaurl)
@@ -222,7 +220,7 @@ class htmlLocalizer:
             mediaLink = media.attrs.get("data-src")
             attType = "data-src"
         else:
-            print(media)
+            #print(media)
             mediaLink = ""
         if (mediaLink.find("svg+xml") > -1) or (mediaLink == ""):
             return ""
@@ -233,7 +231,7 @@ class htmlLocalizer:
         try:
             pos = downloadedMedia.index(mediaPart)
             if(pos > -1):
-                media[attType] = self.directory+"/media/"+downloadedMedia[pos]
+                media[attType] = "media/"+downloadedMedia[pos]
 
         except Exception as e:
             print("Failed replacing image: ", mediaPart)
@@ -261,7 +259,7 @@ class htmlLocalizer:
             mediaPart = filename+file_ext
             pos = downloadedMedia.index(mediaPart)
             if(pos > -1):
-                toReplace = self.directory+"/media/"+downloadedMedia[pos]
+                toReplace = "media/"+downloadedMedia[pos]
                 strStyle = strStyle.replace(link, toReplace)
 
                 element["style"] = strStyle

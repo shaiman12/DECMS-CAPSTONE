@@ -37,9 +37,9 @@ class wpValidator(websiteValidator):
         Method added two wp entensions to the user inputed url. If those pages exist its a WP website. If not it checks the text 
         of the url's html for an instance of the word "wp-" indicating a WP content. If any checks pass it sets validator to true.  
         """
-        wpLoginPage = requests.get(self.siteUrl + '/wp-login.php', headers = self.headers)
-        wpAdminPage = requests.get(self.siteUrl + '/wp-admin', headers = self.headers)
-        wpLinks = requests.get(self.siteUrl, headers = self.headers)
+        wpLoginPage = requests.head(self.siteUrl + '/wp-login.php', headers = self.headers)
+        wpAdminPage = requests.head(self.siteUrl + '/wp-admin', headers = self.headers)
+        wpLinks = requests.head(self.siteUrl, headers = self.headers)
     
         #can make messages more robust in future refactor
         if wpLoginPage.status_code == 200: 
@@ -85,9 +85,9 @@ class drupalValidator(websiteValidator):
         Method checks if two drupal entensions to the user inputed url work. If those pages exist its a drupal website. If not it checks the text 
         of the url's html for an instance of the word "drupal" indicating a WP content. If any checks pass it sets validator to true. 
         """
-        drpalReadMe = requests.get(self.siteUrl + '/readme.txt', headers = self.headers)
-        drupalMReadMe = requests.get(self.siteUrl + '/modules/README.txt', headers = self.headers)
-        drupalLinks = requests.get(self.siteUrl, headers = self.headers)
+        drpalReadMe = requests.head(self.siteUrl + '/readme.txt', headers = self.headers)
+        drupalMReadMe = requests.head(self.siteUrl + '/modules/README.txt', headers = self.headers)
+        drupalLinks = requests.head(self.siteUrl, headers = self.headers)
 
         if drpalReadMe.status_code == 200: 
             print("This is a drupal website! It has a drupal README page!")

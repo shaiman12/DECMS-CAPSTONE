@@ -1,5 +1,9 @@
 from flask import Flask, render_template, url_for, request, flash, send_file, redirect
-
+import pathlib
+import zipfile
+import io
+import os
+import shutil
 from decmsApp.webScraper import webScraper
 from decmsApp.websiteValidator import *
 import traceback
@@ -13,7 +17,17 @@ def home():
     """
     returns the html for the home page of the local GUI
     """
+    text="hiii"
     return render_template('home.html')
+
+
+@app.route('/success/<directory>')
+def success(directory):
+    """
+    returns the html for the home page of the local GUI
+    """
+    text=directory
+    return render_template('success.html',directory=directory)
 
 
 @app.route('/scrape', methods=["GET", "POST"])
@@ -48,19 +62,46 @@ def scrape():
             brokenUrls = scraper.brokenUrls
             flash(
                 f'Successfully downloaded recursively: {processedUrls} but the following were broken: {brokenUrls}', 'success')
+            return redirect(url_for('success',directory=scraper.rootDirectory))
+
 
         else:
             url = scraper.formatUrl(url)
             scraper.downloadWebPage(url)
             flash(f'Successfully downloaded: {url}', 'success')
+            return redirect(url_for('success',directory=scraper.rootDirectory))
 
     except Exception as e:
         flash(f'Failed to download a snapshot of {url}. Error: {e}', 'danger')
         print(e)
         traceback.print_exc()
 
-    finally:
-        return redirect(url_for('home'))
+    return redirect(url_for('home'))
+
+@app.route('/download-zip', methods=["GET", "POST"])
+def request_zip():
+    filePath = request.args.get('directory')
+
+    base_path = pathlib.Path('./'+filePath)
+    data = io.BytesIO()
+    with zipfile.ZipFile(data, mode='w') as z:
+        for f_name in base_path.iterdir():
+            z.write(f_name)
+    data.seek(0)
+
+    return   send_file(
+        data,
+        mimetype='application/zip',
+        as_attachment=True,
+        attachment_filename= filePath+'.zip')
+
+@app.route('/delete-directory', methods=["GET", "POST"])
+def delete_directory():
+    directory = request.args.get('directory')
+    path = "./"+directory
+    shutil.rmtree(path, ignore_errors=True)
+    flash(f'Successfully deleted the local snapshot of: {directory}', 'success')
+    return redirect(url_for('home'))
 
 
 if __name__ == '__main__':

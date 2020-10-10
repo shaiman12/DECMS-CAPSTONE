@@ -2,29 +2,41 @@
 
 <div class="everything">
   <div class="content">
-
     <img src="{{url_for('static', filename='logo.png')}}" />
-    <p>Save websites to your computer</p>
-
+    <p>Save websites to your computer {{ text }}</p>
   </div>
   <form action="/scrape">
     <div class="form-group">
       <label for="url">Enter your url:</label><br />
-      <input class="box" type="text" id="url" name="url" placeholder="https://yoursite.com" />
+      <input
+        class="box"
+        type="text"
+        id="url"
+        name="url"
+        placeholder="https://yoursite.com"
+      />
       <div>
-        <label for="all-pages">Download all pages we can find on the same domain?</label>
+        <label for="all-pages"
+          >Download all pages we can find on the same domain?</label
+        >
 
         <input type="checkbox" id="all-pages" name="all-pages" />
       </div>
     </div>
 
-    <button id="submit" type="submit" class="btn btn-primary" onclick="$('#loading').show();">Save Website</button>
-
+    <button
+      id="submit"
+      type="submit"
+      class="btn btn-primary"
+      onclick="$('#loading').show();"
+    >
+      Save Website
+    </button>
   </form>
-  <div id="loading" style="display:none;"><img src="{{url_for('static', filename='spinner.gif')}}" alt="" />
+  <div id="loading" style="display: none">
+    <img src="{{url_for('static', filename='spinner.gif')}}" alt="" />
     <p>Loading! This may take a while</p>
   </div>
-
 </div>
 
 {% endblock %}

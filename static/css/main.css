@@ -1,11 +1,26 @@
 
-
+body{
+  background-color: #f7feff;
+}
 .everything{
+
+  
   background-color: white;
   justify-content: center;
 
     margin: auto;
+    margin-top: 40px;
     text-align: center;
+    border-style: solid;
+    border-radius: 25px;
+    padding: 5px;
+    padding-bottom: 10px;
+
+}
+
+.container{
+    border-radius: 25px;
+    border: black 2px;
 }
 
 .box{
@@ -25,4 +40,17 @@
     text-align: center;
   height: 30%;
   width: 30%;
+}
+
+#load{
+  height: 50px;
+  width: auto;
+}
+
+#sticky-footer {
+  flex-shrink: none;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  
 }

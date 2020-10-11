@@ -108,15 +108,7 @@ class webScraper():
                     if (not ignoreUrl) & (not((currentUrl in self.processedUrls))):
                         self.processedUrls.append(currentUrl)
                         self.downloadAllWebPages(currentUrl)
-                        #newThread = threading.Thread(target=self.downloadAllWebPages(currentUrl)) 
-                        #threads.append(newThread)
-                        #newThread.start()
-                    
-            """            
-            for t in threads:
-                t.join()
-            """
-
+                        
         except(requests.exceptions.MissingSchema, requests.exceptions.ConnectionError, requests.exceptions.InvalidURL, requests.exceptions.InvalidSchema):
             # Add broken urls to it’s own set, then continue
             self.brokenUrls.add(url)
@@ -133,6 +125,10 @@ class webScraper():
         for pathToIgnore in pathsToIgnore:
             if pathToIgnore in url:
                 return True
+
+        #check for on-page links that use ids
+        if url[url.rfind('/')+1:].startswith('#'):
+            return True
         response = requests.Session().get(url, headers=self.headers)
         contentType = response.headers["content-type"]
         isAcceptable = acceptableType in contentType

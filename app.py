@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, request, flash, send_file, redirect
+from flask import Flask, render_template, url_for, request, flash, send_file, redirect, send_from_directory
 import pathlib
 import zipfile
 import io
@@ -17,7 +17,6 @@ def home():
     """
     returns the html for the home page of the local GUI
     """
-    text="hiii"
     return render_template('home.html')
 
 
@@ -52,8 +51,8 @@ def scrape():
             isValid = drupSiteValidator.runWebsiteChecks()
             if isValid == False:
                 print("Failed Drupal Checks...")
-                #return
-        
+                print("Attempting to download other webite - this was built with Drupal and Wordpress in mind, but should still work as expected...")
+
         scraper = webScraper(url)
         
         if(allPagesRequested):
@@ -75,25 +74,25 @@ def scrape():
         flash(f'Failed to download a snapshot of {url}. Error: {e}', 'danger')
         print(e)
         traceback.print_exc()
+        return redirect(url_for('home'))
 
-    return redirect(url_for('home'))
+def zipdir(path, ziph):
+    # ziph is zipfile handle
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            ziph.write(os.path.join(root, file))
+
 
 @app.route('/download-zip', methods=["GET", "POST"])
 def request_zip():
     filePath = request.args.get('directory')
 
-    base_path = pathlib.Path('./'+filePath)
-    data = io.BytesIO()
-    with zipfile.ZipFile(data, mode='w') as z:
-        for f_name in base_path.iterdir():
-            z.write(f_name)
-    data.seek(0)
+    basePath = pathlib.Path('./'+filePath+'.zip')
+    zipf = zipfile.ZipFile(f'{filePath}.zip', 'w', zipfile.ZIP_DEFLATED)
+    zipdir(f'./{filePath}', zipf)
+    zipf.close()
+    return send_from_directory('./','dadoagency.com.zip', as_attachment=True)
 
-    return   send_file(
-        data,
-        mimetype='application/zip',
-        as_attachment=True,
-        attachment_filename= filePath+'.zip')
 
 @app.route('/delete-directory', methods=["GET", "POST"])
 def delete_directory():

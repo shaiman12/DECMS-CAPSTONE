@@ -57,7 +57,7 @@ def scrape():
         scraper = webScraper(url)
         
         if(allPagesRequested):
-            scraper.downloadAllWebPages()
+            scraper.downloadAllWebPages(url)
             processedUrls = scraper.processedUrls
             brokenUrls = scraper.brokenUrls
             flash(

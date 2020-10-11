@@ -10,6 +10,7 @@ from collections import deque
 import urllib
 import mimetypes
 import pdb
+import threading
 
 class webScraper():
     """
@@ -26,7 +27,7 @@ class webScraper():
         self.homeUrl = url
         self.basePath = self.formatUrl(urlparse(url).hostname)
         self.headers = {'User-Agent': '...', 'referer': 'https://...'}
-        self.processedUrls = set()
+        self.processedUrls = deque()
         self.brokenUrls = set()
         self.rootDirectory = self.basePath[7:]
 
@@ -80,41 +81,45 @@ class webScraper():
         self.createdFiles.append(filename)
         return filename
 
-    def downloadAllWebPages(self, pathsToIgnore=['cdn-cgi','wp-content']):
+    def downloadAllWebPages(self,url,pathsToIgnore=['cdn-cgi','wp-content']):
         """
         Crawls a website for all local webpages (that are on the same domain) and downloads them recursively,
         until there are no more unique pages.
         """
-        print('Starting recursive download...')
-        newUrls = deque([self.formatUrl(self.homeUrl)])
+        print(f'Starting recursive download on {url} ...')
+        threads = []
         # process urls one by one until we exhaust the queue
-        while len(newUrls):
+        
+        # print the current url
+        try:
+            response = requests.Session().get(url, headers=self.headers)
+            htmlSoup = bSoup(response.content, "html.parser")
+            self.processedUrls.append(self.formatUrl(url))
+            self.downloadWebPage(self.formatUrl(url))
+            for anchorTag in htmlSoup.find_all("a", href=True):
+                currentUrl = self.formatUrl(anchorTag['href'])
+                formattedBasePath = self.formatUrl(self.basePath)
 
-            # print the current url
-            try:
-                url = newUrls.popleft()
-                response = requests.Session().get(url, headers=self.headers)
-
-                htmlSoup = bSoup(response.content, "html.parser")
-                self.downloadWebPage(url)
-                self.processedUrls.add(url)
-                for anchorTag in htmlSoup.find_all("a", href=True):
-                    currentUrl = self.formatUrl(anchorTag['href'])
-                    formattedBasePath = self.formatUrl(self.basePath)
                 # If it is explicitely referring to a local page or has a relative path
-                    if formattedBasePath in currentUrl or currentUrl.startswith('/'):
-                        ignoreUrl = self.shouldIgnoreUrl(currentUrl, pathsToIgnore)
-                        #confirm we haven't processed the url, it's not in the queue to be processed and we shouldn't ignore it
-                        if (not ignoreUrl) & (not((currentUrl in self.processedUrls))) & (not (currentUrl in newUrls)) :
-                            newUrls.append(self.formatUrl(currentUrl))
-                
+                if formattedBasePath in currentUrl or currentUrl.startswith('/'):
+                    ignoreUrl = self.shouldIgnoreUrl(currentUrl, pathsToIgnore)
+                    #confirm we haven't processed the url, it's not in the queue to be processed and we shouldn't ignore it
+                    if (not ignoreUrl) & (not((currentUrl in self.processedUrls))):
+                        self.processedUrls.append(currentUrl)
+                        newThread = threading.Thread(target=self.downloadAllWebPages(currentUrl)) 
+                        newThread.start()
+                        threads.append(newThread)
+                        
+            for t in threads:
+                t.join()
 
-            except(requests.exceptions.MissingSchema, requests.exceptions.ConnectionError, requests.exceptions.InvalidURL, requests.exceptions.InvalidSchema):
-                # Add broken urls to it’s own set, then continue
-                self.brokenUrls.add(url)
-                print('Oh no broken link :(')
-                print(url)
-                continue
+
+        except(requests.exceptions.MissingSchema, requests.exceptions.ConnectionError, requests.exceptions.InvalidURL, requests.exceptions.InvalidSchema):
+            # Add broken urls to it’s own set, then continue
+            self.brokenUrls.add(url)
+            print('Oh no broken link :(')
+            print(url)
+            
     
     def shouldIgnoreUrl(self, url, pathsToIgnore, acceptableType="text/html"):
         """

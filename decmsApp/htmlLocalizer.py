@@ -257,12 +257,16 @@ class htmlLocalizer:
             filename, file_ext = os.path.splitext(
                 os.path.basename(dissasembled.path))
             mediaPart = filename+file_ext
-            pos = downloadedMedia.index(mediaPart)
-            if(pos > -1):
-                toReplace = "media/"+downloadedMedia[pos]
-                strStyle = strStyle.replace(link, toReplace)
+            try:
+                pos = downloadedMedia.index(mediaPart)
+                if(pos > -1):
+                    toReplace = "media/"+downloadedMedia[pos]
+                    strStyle = strStyle.replace(link, toReplace)
 
-                element["style"] = strStyle
+                    element["style"] = strStyle
+            except:
+                print("____________________________ Failed replacing image _______________________", mediaPart)
+            
 
     def replaceHrefImages(self):
         """ This method is used to replace the URLS of all images on the locally downloaded static html (where the image is stored in a href/hyperlink)

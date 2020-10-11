@@ -52,7 +52,7 @@ def scrape():
             isValid = drupSiteValidator.runWebsiteChecks()
             if isValid == False:
                 print("Failed Drupal Checks...")
-                return
+                #return
         
         scraper = webScraper(url)
         

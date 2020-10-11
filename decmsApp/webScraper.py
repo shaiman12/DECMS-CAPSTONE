@@ -10,7 +10,7 @@ from collections import deque
 import urllib
 import mimetypes
 import pdb
-import multiprocessing
+
 
 class webScraper():
     """
@@ -107,14 +107,15 @@ class webScraper():
                     #confirm we haven't processed the url, it's not in the queue to be processed and we shouldn't ignore it
                     if (not ignoreUrl) & (not((currentUrl in self.processedUrls))):
                         self.processedUrls.append(currentUrl)
-                        newThread = multiprocessing.Process(target=self.downloadAllWebPages(currentUrl)) 
-                        threads.append(newThread)
-                        newThread.start()
+                        self.downloadAllWebPages(currentUrl)
+                        #newThread = threading.Thread(target=self.downloadAllWebPages(currentUrl)) 
+                        #threads.append(newThread)
+                        #newThread.start()
                     
-                        
+            """            
             for t in threads:
                 t.join()
-
+            """
 
         except(requests.exceptions.MissingSchema, requests.exceptions.ConnectionError, requests.exceptions.InvalidURL, requests.exceptions.InvalidSchema):
             # Add broken urls to it’s own set, then continue

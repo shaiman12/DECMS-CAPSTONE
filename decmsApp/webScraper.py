@@ -125,6 +125,10 @@ class webScraper():
         for pathToIgnore in pathsToIgnore:
             if pathToIgnore in url:
                 return True
+
+        #check for on-page links that use ids
+        if url[url.rfind('/')+1:].startswith('#'):
+            return True
         response = requests.Session().get(url, headers=self.headers)
         contentType = response.headers["content-type"]
         isAcceptable = acceptableType in contentType

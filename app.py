@@ -34,7 +34,10 @@ def scrape():
     """
     returns the html for the home page of the local GUI
 
-    Method receives the url from the user input. In the try, attempts to create a webScraper variable.
+    Method receives the url from the user input. In the try, It first makes use of the websiteValidator class. This ensures the website 
+    returns a HTTP status code of 200 (up and running) and then perfroms various checks to determine if it was built with wordPress or Drupal. The 
+    method then attempts to make a webscraper variable and then depending on user input it a) recursively downloads the entire website b) downloads
+    the singular inputed webpage. 
     If unssuccessful catches and prints the error. 
     """
     url = request.args.get('url')
@@ -43,10 +46,13 @@ def scrape():
     try:
         
         wpSiteValidator = wpValidator(url)
-        isValid = wpSiteValidator.runWebsiteChecks()
 
+        #Performing wordPress Checks
+        isValid = wpSiteValidator.runWebsiteChecks()
         if isValid == False:
             print("Failed WordPress Checks.... Trying Drupal")
+
+            #Performing Drupal Checks
             drupSiteValidator = drupalValidator(url)
             isValid = drupSiteValidator.runWebsiteChecks()
             if isValid == False:

@@ -14,14 +14,15 @@ import pdb
 
 class webScraper():
     """
-    To be Updated fully.
-    Class receives url from the flask application. It creates the HTML soup and *runs recurvisely method that downlaods 
-    each html file and its contents in given file tree.  
+    Class receives url from the flask application. It contains various methods to download and or recursively download the contents 
+    of a webpage(s). 
     """
 
     def __init__(self, url):
         """
-        Constructor class. Creates url and base path variables. 
+        Constructor class. Variables: createdFiles - list containing the name of all the html files downloaded. homeURL - the url the user 
+        inputed into the GUI. basePath - the base directory path of the user inputed url. headers - headers required for making a succesful
+        get request. processUrls - deque used for storing already downloaded urls. brokenUrls - set used for storing URL's that couldn't be downloaded. 
         """
         self.createdFiles = []
         self.homeUrl = url
@@ -29,14 +30,14 @@ class webScraper():
         self.headers = {'User-Agent': '...', 'referer': 'https://...'}
         self.processedUrls = deque()
         self.brokenUrls = set()
-        self.rootDirectory = self.basePath[7:]
     
 
     def downloadWebPage(self, url):
         """ 
-        Returns filename that... shaikus can you write this sentence. not actually sure what/why this returns something lol 
-        Method creates html soup from a parsed in url. It creates an instance of of the htmlLocalizer class and retrieves a list 
-        of css, js and media files to be downloading. These files are then downloaded in parallel using the concurrent.futures lib. (A thread is created for each file in the list). 
+        Returns string - needed for the flask application to function correctly. 
+        Method creates a folder directory if it doesn't already exist. Does so according to HTML dom tree. Creates html soup from a parsed in url. 
+        It creates an instance of of the htmlLocalizer class and retrieves a list of css, js and media files to be downloaded. 
+        These files are then downloaded in parallel using the concurrent.futures lib. (A thread is created for each file in the list). 
         The html soup is updated with all embeded object links to point to the local saved data. Html soup is then saved into a local html file. 
         """
         directory = url[7:] 
@@ -85,18 +86,17 @@ class webScraper():
     def downloadAllWebPages(self,url,pathsToIgnore=['cdn-cgi','wp-content']):
         """
         Crawls a website for all local webpages (that are on the same domain) and downloads them recursively,
-        until there are no more unique pages.
+        until there are no more unique pages. If a url does not work, method catches and saves the url in brokenUrls. 
         """
         print(f'Starting recursive download on {url} ...')
-        threads = []
-        # process urls one by one until we exhaust the queue
         
-        # print the current url
         try:
             response = requests.Session().get(url, headers=self.headers)
             htmlSoup = bSoup(response.content, "html.parser")
+
             self.processedUrls.append(self.formatUrl(url))
             self.downloadWebPage(self.formatUrl(url))
+            
             for anchorTag in htmlSoup.find_all("a", href=True):
                 currentUrl = self.formatUrl(anchorTag['href'])
                 formattedBasePath = self.formatUrl(self.basePath)

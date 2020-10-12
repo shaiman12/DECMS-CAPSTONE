@@ -3,9 +3,12 @@ from bs4 import BeautifulSoup as bSoup
 
 class websiteValidator:
     """
-    Class checks if the website is currently online and if it uses WP. (Future drupal method to be added)
+    Parent class. Contains method that finds a webpages HTTP status code. 
     """
     def __init__(self, url):
+        """
+        Constructor class. Contains variables that stores the inputed URL and headers needed for the get request.
+        """
         self.siteUrl = url
         self.headers = {'User-Agent': '...','referer': 'https://...'}
 
@@ -23,25 +26,29 @@ class websiteValidator:
                 print("Website doesn't appear to be up and running...")
                 return False
         except requests.RequestException as e:
-            #print(e)
             return False
 
 class wpValidator(websiteValidator):
+    """
+    Class inherits websiteValidator. 
+    """
 
     def __init__(self, url):
+        """
+        Contructor class. When invoked calls the instructor of it's parent class. 
+        """
         websiteValidator.__init__(self, url)
 
     
     def isWordPressSite(self):
         """
-        Method added two wp entensions to the user inputed url. If those pages exist its a WP website. If not it checks the text 
-        of the url's html for an instance of the word "wp-" indicating a WP content. If any checks pass it sets validator to true.  
+        Method adds two wordPress entensions to the user inputed url. If those pages exist its a WP website. If not it creates
+        html soup and looks for an instance of the word "wp-" in an href indicating a WP content. 
+        If any checks pass it returns true, else it returns false.   
         """
         wpLoginPage = requests.head(self.siteUrl + '/wp-login.php', headers = self.headers)
         wpAdminPage = requests.head(self.siteUrl + '/wp-admin', headers = self.headers)
-        wpLinks = requests.head(self.siteUrl, headers = self.headers)
-    
-        #can make messages more robust in future refactor
+        
         if wpLoginPage.status_code == 200: 
             print("This is a wordpress website! It has a WP login page!")
             return True 
@@ -64,7 +71,7 @@ class wpValidator(websiteValidator):
     
     def runWebsiteChecks(self):
         """
-        Returns boolean. True if website is up and running and was built in WP (drupal). False if not.
+        Returns a boolean. True if website is up and running and was built in WP. False if not.
         Calls class member functions to perform checks. 
         """
         print("Performing WordPress Checks...")
@@ -75,8 +82,14 @@ class wpValidator(websiteValidator):
 
 
 class drupalValidator(websiteValidator):
+    """
+    Class inherits websiteValidator. 
+    """
     
     def __init__(self, url):
+        """
+        Contructor class. When invoked calls the instructor of it's parent class. 
+        """
         websiteValidator.__init__(self, url)
     
 
@@ -87,7 +100,7 @@ class drupalValidator(websiteValidator):
         """
         drpalReadMe = requests.head(self.siteUrl + '/readme.txt', headers = self.headers)
         drupalMReadMe = requests.head(self.siteUrl + '/modules/README.txt', headers = self.headers)
-        drupalLinks = requests.head(self.siteUrl, headers = self.headers)
+        drupalLinks = requests.get(self.siteUrl, headers = self.headers)
 
         if drpalReadMe.status_code == 200: 
             print("This is a drupal website! It has a drupal README page!")
@@ -108,7 +121,7 @@ class drupalValidator(websiteValidator):
 
     def runWebsiteChecks(self):
         """
-        Returns boolean. True if website is up and running and was built in WP (drupal). False if not.
+        Returns boolean. True if website is up and running and was built in drupal. False if not.
         Calls class member functions to perform checks. 
         """
         print("Performing Drupal Checks...")

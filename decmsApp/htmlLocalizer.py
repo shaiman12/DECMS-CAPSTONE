@@ -9,16 +9,17 @@ import pdb
 
 class htmlLocalizer:
     """
-    Class receives the url and html soup from the webScraper. Contains methods to locate, download, and inline edit the css files and
+    Class receives the url and html soup from the webScraper. Contains methods to locate, download, and inline edit the css + js files and
     embeded object links from the html soup.
     """
 
     def __init__(self, url, htmlSoup, directory):
         """
-        Constructor class.
+        Constructor class. Variables url - the passed in url. imageLinkList - list to contain the filenames of all downloaded images needed for 
+        inline editing. hmtlSoup - the html soup for the html file. directory - the directory needed for saving items. headers - headers needed for the get 
+        requests.  
         """
         self.url = url
-        self.imgPath = "imgs"
         self.imagelinklist = []
         self.htmlSoup = htmlSoup
         self.directory = directory
@@ -86,8 +87,10 @@ class htmlLocalizer:
         localFile.close
 
     def getImageList(self):
-        """ Method will retrieve a list of images on the web page. This scrapes an html file using the Beautifulsoup object.
-        All the img tags are scraped here for the links to the images """
+        """ 
+        Method will retrieve a list of images on the web page. This scrapes an html file using the Beautifulsoup object.
+        All the img tags are scraped here for the links to the images 
+        """
         links = []
 
         print('Getting list of images...')
@@ -100,8 +103,10 @@ class htmlLocalizer:
         return links
 
     def getBgImageList(self):
-        """ This method will retrieve a list of background images on the web page. This scrapes an html file using the Beautifulsoup object.
-        We use the soup to find all elements having style attributes containing a background image """
+        """ 
+        This method will retrieve a list of background images on the web page. This scrapes an html file using the Beautifulsoup object.
+        We use the soup to find all elements having style attributes containing a background image 
+        """
         print('Getting list of background images...')
         links = []
         styles = []
@@ -115,9 +120,11 @@ class htmlLocalizer:
         return links
 
     def imagesFromOtherHrefs(self):
-        """ This method will retrieve a list of images that cannot be found in img tags. Here we look for images that are stored in hrefs.
-         This scrapes an html file using the Beautifulsoup object.
-        We use the soup to find all tags having an href attribute containing a image """
+        """ 
+        This method will retrieve a list of images that cannot be found in img tags. Here we look for images that are stored in hrefs.
+        This scrapes an html file using the Beautifulsoup object.
+        We use the soup to find all tags having an href attribute containing a image 
+        """
         links = []
         for element in self.htmlSoup.find_all(href=True):
             href = element["href"]
@@ -127,11 +134,12 @@ class htmlLocalizer:
         for link in links:
             newLinks.append(self.linkMaker(link))
         return newLinks
-# Returns a list of all links of videos from a URL
 
     def getAudioVideolist(self):
-        """ Method will retrieve a list of all video and audio files on the web page. This scrapes an html file using the Beautifulsoup object.
-        All the source tags are scraped here for the links to the media """
+        """ 
+        Method will retrieve a list of all video and audio files on the web page. This scrapes an html file using the Beautifulsoup object.
+        All the source tags are scraped here for the links to the media 
+        """
         audioVideoLinks = []
         print('Getting list of videos...')
 
@@ -143,9 +151,11 @@ class htmlLocalizer:
 # Formats a link into correct form for downloading
 
     def linkMaker(self, mediaItem):
-        """ This method receives a media item beautiful soup object that represents the content within a tag
+        """ 
+        This method receives a media item beautiful soup object that represents the content within a tag
         The method processes the element to extract the link to the desired media in the correct form.
-        The method returns a URL string in the correct formatting for downloading"""
+        The method returns a URL string in the correct formatting for downloading
+        """
         mediaurl = ""
         if mediaItem.has_attr('href'):
             mediaurl = mediaItem.attrs.get("href")
@@ -157,7 +167,7 @@ class htmlLocalizer:
             mediaLink = mediaItem.attrs.get("data-src")
         else:
             mediaurl = ""
-            #print(mediaItem)
+            
         if mediaurl.find("svg+xml") > -1 or mediaurl == "":
             return ""
         mediaurl = urljoin(self.url, mediaurl)
@@ -169,11 +179,12 @@ class htmlLocalizer:
             pass
         return mediaurl
 
-# Receives a URL and downloads the file locally
 
     def downloadMedia(self, media_url):
-        """ This method is used to download a media file. It receives a URL to the desired media file. The media file is then saved to the 
-        media directory"""
+        """ 
+        This method is used to download a media file. It receives a URL to the desired media file. The media file is then saved to the 
+        media directory
+        """
         filename = os.path.join(
             self.directory, "media/"+media_url.split("/")[-1])
         os.makedirs(os.path.dirname(filename), exist_ok=True)
@@ -186,24 +197,22 @@ class htmlLocalizer:
                 shutil.copyfileobj(mediaContent.raw, f)
 
 
-# replaces all old image urls with the new locally saved versions
-
-
     def replaceImg(self):
-        """ This method is used to replace the src attribute of all img tags on the locally downloaded static html with the downloaded images in the media directory"""
+        """ 
+        This method is used to replace the src attribute of all img tags on the locally downloaded static html with the downloaded images in the media directory
+        """
         for image in self.htmlSoup.find_all("img"):
             if self.replaceMedia(image) == "":
                 continue
             self.replaceMedia(image)
 
 
-# Using the html soup, this method replaces the old media url with the new locally saved version
-
-
     def replaceMedia(self, media):
-        """ This is the method used to replace a media url/hyperlink on the local static html file with a locally downloaded media file.
+        """ 
+        This is the method used to replace a media url/hyperlink on the local static html file with a locally downloaded media file.
         It receives a beautiful soup object that represents a media tag and changes its source attribute to the locally downloaded media file
-        found in the media directory """
+        found in the media directory 
+        """
 
         downloadedMedia = os.listdir(os.path.join(self.directory, "media/"))
         mediaLink = ""
@@ -220,8 +229,8 @@ class htmlLocalizer:
             mediaLink = media.attrs.get("data-src")
             attType = "data-src"
         else:
-            #print(media)
             mediaLink = ""
+
         if (mediaLink.find("svg+xml") > -1) or (mediaLink == ""):
             return ""
         dissasembled = urlparse(mediaLink)
@@ -238,8 +247,10 @@ class htmlLocalizer:
             print(e)
 
     def replaceBgImages(self):
-        """ This method is used to replace the URLS of all background images on the locally downloaded static html 
-        with the downloaded background images in the media directory"""
+        """ 
+        This method is used to replace the URLS of all background images on the locally downloaded static html 
+        with the downloaded background images in the media directory
+        """
         downloadedMedia = os.listdir(self.directory+"/media/")
 
         elementsToReplace = []
@@ -257,33 +268,43 @@ class htmlLocalizer:
             filename, file_ext = os.path.splitext(
                 os.path.basename(dissasembled.path))
             mediaPart = filename+file_ext
-            pos = downloadedMedia.index(mediaPart)
-            if(pos > -1):
-                toReplace = "media/"+downloadedMedia[pos]
-                strStyle = strStyle.replace(link, toReplace)
+            try:
+                pos = downloadedMedia.index(mediaPart)
+                if(pos > -1):
+                    toReplace = "media/"+downloadedMedia[pos]
+                    strStyle = strStyle.replace(link, toReplace)
 
-                element["style"] = strStyle
+                    element["style"] = strStyle
+            except:
+                print("____________________________ Failed replacing image _______________________", mediaPart)
+            
 
     def replaceHrefImages(self):
-        """ This method is used to replace the URLS of all images on the locally downloaded static html (where the image is stored in a href/hyperlink)
-        with the downloaded background images in the media directory"""
+        """ 
+        This method is used to replace the URLS of all images on the locally downloaded static html (where the image is stored in a href/hyperlink)
+        with the downloaded background images in the media directory
+        """
         for element in self.htmlSoup.find_all(href=True):
             href = element["href"]
             if ".png" in href or ".jpg" in href or ".jpeg" in href or ".gif" in href or ".JPEG" in href or ".svg" in href:
                 self.replaceMedia(element)
 
-# replaces all old video urls with the new locally saved versions
+
 
     def replaceAudioVideos(self):
-        """ This method is used to replace the URLS of all audio and video files on the locally downloaded static html
-        with the associated downloaded local files in the media directory"""
+        """ 
+        This method is used to replace the URLS of all audio and video files on the locally downloaded static html
+        with the associated downloaded local files in the media directory
+        """
         for audioVideo in self.htmlSoup.find_all('source', type=['video/mp4', 'video/ogg', 'video/webm', 'audio/ogg', 'audio/mpeg']):
             self.replaceMedia(audioVideo)
 
-# form removal
+
 
     def removeForms(self):
-        """This method is intended to remove all login boxes, search items and other non-static elements by removing forms from web pages"""
+        """
+        This method is intended to remove all login boxes, search items and other non-static elements by removing forms from web pages
+        """
         for form in self.htmlSoup.find_all("form"):
             form.replaceWith('')
 

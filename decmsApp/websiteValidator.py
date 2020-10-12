@@ -74,7 +74,7 @@ class wpValidator(websiteValidator):
         Returns a boolean. True if website is up and running and was built in WP. False if not.
         Calls class member functions to perform checks. 
         """
-        print("Performing WordPress Checks...")
+        print("Checking if this is a WordPress site...")
         if self.isUrlValid() == True:
             return self.isWordPressSite()
         else:
@@ -124,7 +124,7 @@ class drupalValidator(websiteValidator):
         Returns boolean. True if website is up and running and was built in drupal. False if not.
         Calls class member functions to perform checks. 
         """
-        print("Performing Drupal Checks...")
+        print("Checking if this is a drupal site...")
         if self.isUrlValid():
             return self.isDrupalSite()
         else:

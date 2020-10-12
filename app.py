@@ -23,9 +23,11 @@ def home():
 @app.route('/success/<directory>')
 def success(directory):
     """
-    returns the html for the home page of the local GUI
+    returns the html for the success page after downloading a website 
+    and saving it in a directory. eg. after downloading obama.org the enpoint hit will be 
+    localhost:5000/success/obama.org - obama.org will be the directory in which the 
+    site was saved
     """
-    text=directory
     return render_template('success.html',directory=directory)
 
 
@@ -82,25 +84,39 @@ def scrape():
         traceback.print_exc()
         return redirect(url_for('home'))
 
-def zipdir(path, ziph):
-    # ziph is zipfile handle
+def zipdir(path, zipFileHandler):
+    """
+    This method create a zip file of a given path, 
+    recursively zipping it's sub folders
+    """
+
+    # zipFileHandler is zipfile handle
     for root, dirs, files in os.walk(path):
         for file in files:
-            ziph.write(os.path.join(root, file))
+            zipFileHandler.write(os.path.join(root, file))
 
 
 @app.route('/download-zip', methods=["GET", "POST"])
+"""
+This endpoint expects a directory as a query param
+it returns a zip file of the directory (found in the file system 
+wherever this application is running from) to the user
+"""
 def request_zip():
     filePath = request.args.get('directory')
 
     basePath = pathlib.Path('./'+filePath+'.zip')
-    zipf = zipfile.ZipFile(f'{filePath}.zip', 'w', zipfile.ZIP_DEFLATED)
-    zipdir(f'./{filePath}', zipf)
-    zipf.close()
-    return send_from_directory('./','dadoagency.com.zip', as_attachment=True)
+    zipFileHandler = zipfile.ZipFile(f'{filePath}.zip', 'w', zipfile.ZIP_DEFLATED)
+    zipdir(f'./{filePath}', zipFileHandler)
+    zipFileHandler.close()
+    return send_from_directory('./',filePath+".zip", as_attachment=True)
 
 
 @app.route('/delete-directory', methods=["GET", "POST"])
+"""
+This endpoint expects a directory as a query param
+it then deletes the entire directory and its contents
+"""
 def delete_directory():
     directory = request.args.get('directory')
     path = "./"+directory

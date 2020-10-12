@@ -1,0 +1,21 @@
+{% extends "layout.html" %} {% block content %}
+
+<div class="everything">
+  <div class="content">
+    <img src="{{url_for('static', filename='logo.png')}}" />
+    <p>Save websites to your computer</p>
+    <h2 style="margin-bottom: 50px">
+      We just downloaded a snapshot of {{ directory }}
+    </h2>
+    <a href="/delete-directory?directory={{directory}}">
+      <button class="btn btn-danger">
+        ← Delete Download and Go back home
+      </button></a
+    >
+    <a href="/download-zip?directory={{directory}}">
+      <button class="btn btn-primary">Download Zip File</button></a
+    >
+  </div>
+</div>
+
+{% endblock %}

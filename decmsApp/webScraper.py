@@ -83,7 +83,7 @@ class webScraper():
         self.createdFiles.append(filename)
         return filename
 
-    def downloadAllWebPages(self,url,pathsToIgnore=['cdn-cgi','wp-content']):
+    def downloadAllWebPages(self,url,pathsToIgnore=['cdn-cgi']):
         """
         Crawls a website for all local webpages (that are on the same domain) and downloads them recursively,
         until there are no more unique pages. If a url does not work, method catches and saves the url in brokenUrls. 

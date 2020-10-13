@@ -180,17 +180,17 @@ class htmlLocalizer:
         return mediaurl
 
 
-    def downloadMedia(self, media_url):
+    def downloadMedia(self, mediaUrl):
         """ 
         This method is used to download a media file. It receives a URL to the desired media file. The media file is then saved to the 
         media directory
         """
         filename = os.path.join(
-            self.directory, "media/"+media_url.split("/")[-1])
+            self.directory, "media/"+mediaUrl.split("/")[-1])
         os.makedirs(os.path.dirname(filename), exist_ok=True)
 
         mediaContent = requests.get(
-            media_url, stream=True, headers=self.headers)
+            mediaUrl, stream=True, headers=self.headers)
         if mediaContent.status_code == 200:
             mediaContent.raw.decode_content = True
             with open(filename, 'wb') as f:

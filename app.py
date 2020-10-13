@@ -24,7 +24,7 @@ def home():
 def success(directory):
     """
     returns the html for the success page after downloading a website 
-    and saving it in a directory. eg. after downloading obama.org the enpoint hit will be 
+    and saving it in a directory. eg. after downloading obama.org the endpoint hit will be 
     localhost:5000/success/obama.org - obama.org will be the directory in which the 
     site was saved
     """

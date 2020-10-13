@@ -30,7 +30,8 @@ class webScraper():
         self.headers = {'User-Agent': '...', 'referer': 'https://...'}
         self.processedUrls = []
         self.brokenUrls = set()
-    
+        self.rootDirectory = self.basePath[7:]
+
 
     def downloadWebPage(self, url):
         """ 

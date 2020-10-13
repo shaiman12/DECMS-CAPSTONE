@@ -59,10 +59,10 @@ class webScraper():
        
         with concurrent.futures.ThreadPoolExecutor(max_workers = 20) as executor:
             print("Downloading CSS files...")
-            executor.map(localizeContent.downloadUrlContent, cssFiles)
+            executor.map(localizeContent.downloadRemoteFile, cssFiles)
 
             print("Downloading JS files...")
-            executor.map(localizeContent.downloadUrlContent, jsFiles)
+            executor.map(localizeContent.downloadRemoteFile, jsFiles)
 
             print("Downloading Media files...")
             executor.map(localizeContent.downloadMedia, mediaFiles, timeout = 200)

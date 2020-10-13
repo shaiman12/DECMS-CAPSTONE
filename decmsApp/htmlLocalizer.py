@@ -73,9 +73,9 @@ class htmlLocalizer:
 
         return jsLinks
 
-    def downloadUrlContent(self, listOfFiles):
+    def downloadRemoteFile(self, listOfFiles):
         """
-        Method receives a 2xN array. The first element contains a url in which the request lib retrieves its contents. The second element
+        Method receives an array containing. The first element contains a url in which the request lib retrieves its contents. The second element
         contains the local file name in which the content is saved. 
         """
         fileContent = requests.get(listOfFiles[0], headers = self.headers)

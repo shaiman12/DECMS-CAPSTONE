@@ -28,7 +28,7 @@ class webScraper():
         self.homeUrl = url
         self.basePath = self.formatUrl(urlparse(url).hostname)
         self.headers = {'User-Agent': '...', 'referer': 'https://...'}
-        self.processedUrls = deque()
+        self.processedUrls = []
         self.brokenUrls = set()
     
 

@@ -97,12 +97,13 @@ def zipdir(path, zipFileHandler):
 
 
 @app.route('/download-zip', methods=["GET", "POST"])
-"""
-This endpoint expects a directory as a query param
-it returns a zip file of the directory (found in the file system 
-wherever this application is running from) to the user
-"""
+
 def request_zip():
+    """
+    This endpoint expects a directory as a query param
+    it returns a zip file of the directory (found in the file system 
+    wherever this application is running from) to the user
+    """
     filePath = request.args.get('directory')
 
     basePath = pathlib.Path('./'+filePath+'.zip')
@@ -113,11 +114,12 @@ def request_zip():
 
 
 @app.route('/delete-directory', methods=["GET", "POST"])
-"""
-This endpoint expects a directory as a query param
-it then deletes the entire directory and its contents
-"""
+
 def delete_directory():
+    """
+    This endpoint expects a directory as a query param
+    it then deletes the entire directory and its contents
+    """
     directory = request.args.get('directory')
     path = "./"+directory
     shutil.rmtree(path, ignore_errors=True)

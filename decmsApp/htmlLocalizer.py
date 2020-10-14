@@ -23,7 +23,7 @@ class htmlLocalizer:
         """
         self.url = url
         self.imagelinklist = []
-        self.htmlFile = htmlFile(url,response ,self)
+        self.htmlFile = htmlFile(response ,self)
         self.headers = {'User-Agent': '...', 'referer': 'https://...'}
 
     def getAndReplaceCSS(self):
@@ -215,7 +215,7 @@ class htmlLocalizer:
         found in the media directory 
         """
 
-        downloadedMedia = os.listdir(os.path.join(self.getDirectory, "media/"))
+        downloadedMedia = os.listdir(os.path.join(self.getDirectory(), "media/"))
         mediaLink = ""
         if(media.has_attr('href')):
             mediaLink = media.attrs.get("href")
@@ -252,7 +252,7 @@ class htmlLocalizer:
         This method is used to replace the URLS of all background images on the locally downloaded static html 
         with the downloaded background images in the media directory
         """
-        downloadedMedia = os.listdir(self.getDirectory+"/media/")
+        downloadedMedia = os.listdir(self.getDirectory()+"/media/")
 
         elementsToReplace = []
         for element in self.getHtmlSoup().find_all(style=True):
@@ -326,7 +326,7 @@ class htmlLocalizer:
         """
         Method makes use of all replace 'media' methods for cleaner code. 
         """
-        pathname = os.path.join(self.getDirectory, "media/")
+        pathname = os.path.join(self.getDirectory(), "media/")
         os.makedirs(pathname, exist_ok=True)
 
         self.replaceImg()

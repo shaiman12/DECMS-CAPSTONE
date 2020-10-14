@@ -46,7 +46,7 @@ class webScraper():
         if not os.path.exists(directory):
             os.makedirs(directory)
             
-        print(f'Downloading {htmlLocalizer.remoteDirectory}')
+        print(f'Downloading {url}')
     
         
         htmlSoup = htmlLocalizer.getHtmlSoup()
@@ -88,11 +88,11 @@ class webScraper():
         try:
             url = self.formatUrl(url)
             response = requests.Session().get(url, headers=self.headers)
-            htmlLocalizer = htmlLocalizer(url, response)
-            htmlSoup = htmlLocalizer.getHtmlSoup()
+            htmlLocalize = htmlLocalizer(url, response)
+            htmlSoup = htmlLocalize.getHtmlSoup()
   
             self.processedUrls.append(self.formatUrl(url))
-            self.downloadWebPage(htmlLocalizer)
+            self.downloadWebPage(htmlLocalize)
             
             for anchorTag in htmlSoup.find_all("a", href=True):
                 currentUrl = self.formatUrl(anchorTag['href'])

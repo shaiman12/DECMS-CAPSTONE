@@ -89,12 +89,11 @@ class webScraper():
             url = self.formatUrl(url)
             response = requests.Session().get(url, headers=self.headers)
             htmlLocalize = htmlLocalizer(url, response)
-            htmlSoup = htmlLocalize.getHtmlSoup()
   
             self.processedUrls.append(self.formatUrl(url))
             self.downloadWebPage(htmlLocalize)
             
-            for anchorTag in htmlSoup.find_all("a", href=True):
+            for anchorTag in htmlLocalize.getHtmlSoup().find_all("a", href=True):
                 currentUrl = self.formatUrl(anchorTag['href'])
                 formattedBasePath = self.formatUrl(self.basePath)
 
@@ -103,7 +102,13 @@ class webScraper():
                     ignoreUrl = self.shouldIgnoreUrl(currentUrl, pathsToIgnore)
                     #confirm we haven't processed the url, it's not in the queue to be processed and we shouldn't ignore it
                     if (not ignoreUrl) & (not((currentUrl in self.processedUrls))):
+                        self.processedUrls.append(self.formatUrl(url))
                         self.downloadAllWebPages(currentUrl)
+                        
+                        newDirectory = currentUrl[currentUrl.rfind("/")+1:]
+                        anchorTag['href'] = newDirectory+"/"+newDirectory+".html"
+                        print(f'It is now {anchorTag["href"]} ')
+
                         
         except(requests.exceptions.MissingSchema, requests.exceptions.ConnectionError, requests.exceptions.InvalidURL, requests.exceptions.InvalidSchema):
             # Add broken urls to it’s own set, then continue

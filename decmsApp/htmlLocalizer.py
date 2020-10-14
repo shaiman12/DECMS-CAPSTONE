@@ -278,7 +278,8 @@ class htmlLocalizer:
                     element["style"] = strStyle
             except:
                 print("____________________________ Failed replacing image _______________________", mediaPart)
-            
+    
+
 
     def replaceHrefImages(self):
         """ 
@@ -364,6 +365,4 @@ class htmlFile:
 
     def setFilename(self):
         url = self.remoteDirectory
-        currentDateTime = datetime.now().strftime(
-            "%m/%d/%Y-%H:%M:%S").replace('/', '-')
-        return os.path.join(self.localDirectory, url[url.rfind("/")+1:] + currentDateTime+".html")
+        return os.path.join(self.localDirectory, url[url.rfind("/")+1:]+".html")

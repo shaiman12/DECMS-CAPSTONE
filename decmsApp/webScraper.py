@@ -20,11 +20,10 @@ class webScraper():
 
     def __init__(self, url):
         """
-        Constructor class. Variables: createdFiles - list containing the name of all the html files downloaded. homeURL - the url the user 
+        Constructor class. Variables: homeURL - the url the user 
         inputed into the GUI. basePath - the base directory path of the user inputed url. headers - headers required for making a succesful
         get request. processUrls - deque used for storing already downloaded urls. brokenUrls - set used for storing URL's that couldn't be downloaded. 
         """
-        self.createdFiles = []
         self.homeUrl = url
         self.basePath = self.formatUrl(urlparse(url).hostname)
         self.headers = {'User-Agent': '...', 'referer': 'https://...'}
@@ -33,7 +32,7 @@ class webScraper():
         self.rootDirectory = self.basePath[7:]
 
 
-    def downloadWebPage(self, url):
+    def downloadWebPage(self, htmlLocalizer):
         """ 
         Returns string - needed for the flask application to function correctly. 
         Method creates a folder directory if it doesn't already exist. Does so according to HTML dom tree. Creates html soup from a parsed in url. 
@@ -41,47 +40,42 @@ class webScraper():
         These files are then downloaded in parallel using the concurrent.futures lib. (A thread is created for each file in the list). 
         The html soup is updated with all embeded object links to point to the local saved data. Html soup is then saved into a local html file. 
         """
-        directory = url[7:] 
-        if not os.path.exists(url[7:]):
-            os.makedirs(url[7:])
+        htmlFile = htmlLocalizer.getHtmlFile()
+        directory = htmlFile.localDirectory
+        url = htmlFile.remoteDirectory
+        if not os.path.exists(directory):
+            os.makedirs(directory)
             
-
-        print(f'Downloading {url}')
-        htmlSoup = bSoup(requests.Session().get(
-            url, headers=self.headers).content, "html.parser")
-
+        print(f'Downloading {htmlLocalizer.remoteDirectory}')
+    
         
-        localizeContent = htmlLocalizer(url, htmlSoup, directory)
-
-        cssFiles = localizeContent.getAndReplaceCSS()
-        jsFiles = localizeContent.getAndReplaceJS()
-        mediaFiles = localizeContent.getAllMediaLists()
+        htmlSoup = htmlLocalizer.getHtmlSoup()
+        cssFiles = htmlLocalizer.getAndReplaceCSS()
+        jsFiles = htmlLocalizer.getAndReplaceJS()
+        mediaFiles = htmlLocalizer.getAllMediaLists()
        
         with concurrent.futures.ThreadPoolExecutor(max_workers = 20) as executor:
             print("Downloading CSS files...")
-            executor.map(localizeContent.downloadRemoteFile, cssFiles)
+            executor.map(htmlLocalizer.downloadRemoteFile, cssFiles)
 
             print("Downloading JS files...")
-            executor.map(localizeContent.downloadRemoteFile, jsFiles)
+            executor.map(htmlLocalizer.downloadRemoteFile, jsFiles)
 
             print("Downloading Media files...")
-            executor.map(localizeContent.downloadMedia, mediaFiles, timeout = 200)
+            executor.map(htmlLocalizer.downloadMedia, mediaFiles, timeout = 200)
             
             print("Removing unnecessary forms such as login boxes, searches...")
-            executor.map(localizeContent.removeForms()) 
+            executor.map(htmlLocalizer.removeForms()) 
         
-        localizeContent.replaceAllMedia()
-      
-        currentDateTime = datetime.now().strftime(
-            "%m/%d/%Y-%H:%M:%S").replace('/', '-')
-        filename = os.path.join(directory, url[url.rfind("/")+1:] + currentDateTime+".html")
+        htmlLocalizer.replaceAllMedia()
+
+        filename = htmlFile.newFilename
 
 
         localHtmlFile = htmlSoup.prettify("utf-8")
         with open(filename, "wb") as file:
             file.write(localHtmlFile)
 
-        self.createdFiles.append(filename)
         return filename
 
     def downloadAllWebPages(self,url,pathsToIgnore=['cdn-cgi']):
@@ -92,11 +86,13 @@ class webScraper():
         print(f'Starting recursive download on {url} ...')
         
         try:
+            url = self.formatUrl(url)
             response = requests.Session().get(url, headers=self.headers)
-            htmlSoup = bSoup(response.content, "html.parser")
-
+            htmlLocalizer = htmlLocalizer(url, response)
+            htmlSoup = htmlLocalizer.getHtmlSoup()
+  
             self.processedUrls.append(self.formatUrl(url))
-            self.downloadWebPage(self.formatUrl(url))
+            self.downloadWebPage(htmlLocalizer)
             
             for anchorTag in htmlSoup.find_all("a", href=True):
                 currentUrl = self.formatUrl(anchorTag['href'])
@@ -107,7 +103,6 @@ class webScraper():
                     ignoreUrl = self.shouldIgnoreUrl(currentUrl, pathsToIgnore)
                     #confirm we haven't processed the url, it's not in the queue to be processed and we shouldn't ignore it
                     if (not ignoreUrl) & (not((currentUrl in self.processedUrls))):
-                        self.processedUrls.append(currentUrl)
                         self.downloadAllWebPages(currentUrl)
                         
         except(requests.exceptions.MissingSchema, requests.exceptions.ConnectionError, requests.exceptions.InvalidURL, requests.exceptions.InvalidSchema):

@@ -5,6 +5,8 @@ from urllib.parse import urljoin, urlparse
 import shutil
 from cssutils import parseStyle
 import pdb
+from datetime import datetime
+
 
 
 class htmlLocalizer:
@@ -13,7 +15,7 @@ class htmlLocalizer:
     embeded object links from the html soup.
     """
 
-    def __init__(self, url, htmlSoup, directory):
+    def __init__(self, url, response):
         """
         Constructor class. Variables url - the passed in url. imageLinkList - list to contain the filenames of all downloaded images needed for 
         inline editing. hmtlSoup - the html soup for the html file. directory - the directory needed for saving items. headers - headers needed for the get 
@@ -21,8 +23,7 @@ class htmlLocalizer:
         """
         self.url = url
         self.imagelinklist = []
-        self.htmlSoup = htmlSoup
-        self.directory = directory
+        self.htmlFile = htmlFile(url,response ,self)
         self.headers = {'User-Agent': '...', 'referer': 'https://...'}
 
     def getAndReplaceCSS(self):
@@ -34,7 +35,7 @@ class htmlLocalizer:
         cssLinks = []
         count = 0
         print('Getting list of css files ...')
-        for cssFile in self.htmlSoup.find_all("link"):
+        for cssFile in self.getHtmlSoup().find_all("link"):
             if cssFile.attrs.get("href") and '.css' in cssFile['href']:
 
                 completeCssUrl = urljoin(self.url, cssFile.attrs.get("href"))
@@ -58,7 +59,7 @@ class htmlLocalizer:
         jsLinks = []
         count = 0
         print('Getting list of js files ...')
-        for jsFile in self.htmlSoup.find_all("script"):
+        for jsFile in self.getHtmlSoup().find_all("script"):
             if jsFile.attrs.get("src") and '.js' in jsFile['src']:
 
                 completeJsUrl = urljoin(self.url, jsFile.attrs.get("src"))
@@ -79,7 +80,7 @@ class htmlLocalizer:
         contains the local file name in which the content is saved. 
         """
         fileContent = requests.get(listOfFiles[0], headers = self.headers)
-        directoryName = os.path.join(self.directory,listOfFiles[1])
+        directoryName = os.path.join(self.getDirectory(),listOfFiles[1])
         os.makedirs(os.path.dirname(directoryName), exist_ok=True)
         
         localFile = open(directoryName, "w")
@@ -94,7 +95,7 @@ class htmlLocalizer:
         links = []
 
         print('Getting list of images...')
-        for image in self.htmlSoup.find_all("img"):
+        for image in self.getHtmlSoup().find_all("img"):
             if(self.linkMaker(image) == ""):
                 continue
             else:
@@ -110,7 +111,7 @@ class htmlLocalizer:
         print('Getting list of background images...')
         links = []
         styles = []
-        for element in self.htmlSoup.find_all(style=True):
+        for element in self.getHtmlSoup().find_all(style=True):
             if(element["style"]).find("background-image: url") > -1:
                 styles.append(element["style"])
         for style in styles:
@@ -126,7 +127,7 @@ class htmlLocalizer:
         We use the soup to find all tags having an href attribute containing a image 
         """
         links = []
-        for element in self.htmlSoup.find_all(href=True):
+        for element in self.getHtmlSoup().find_all(href=True):
             href = element["href"]
             if ".png" in href or ".jpg" in href or ".jpeg" in href or ".gif" in href or ".JPEG" in href or ".svg" in href:
                 links.append(element)
@@ -143,7 +144,7 @@ class htmlLocalizer:
         audioVideoLinks = []
         print('Getting list of videos...')
 
-        for audioVideo in self.htmlSoup.find_all('source', type=['video/ogg', 'video/mp4', 'video/webm', 'audio/ogg', 'audio/mpeg']):
+        for audioVideo in self.getHtmlSoup().find_all('source', type=['video/ogg', 'video/mp4', 'video/webm', 'audio/ogg', 'audio/mpeg']):
             audioVideoLinks.append(self.linkMaker(audioVideo))
 
         return audioVideoLinks
@@ -186,7 +187,7 @@ class htmlLocalizer:
         media directory
         """
         filename = os.path.join(
-            self.directory, "media/"+mediaUrl.split("/")[-1])
+            self.getDirectory(), "media/"+mediaUrl.split("/")[-1])
         os.makedirs(os.path.dirname(filename), exist_ok=True)
 
         mediaContent = requests.get(
@@ -201,7 +202,7 @@ class htmlLocalizer:
         """ 
         This method is used to replace the src attribute of all img tags on the locally downloaded static html with the downloaded images in the media directory
         """
-        for image in self.htmlSoup.find_all("img"):
+        for image in self.getHtmlSoup().find_all("img"):
             if self.replaceMedia(image) == "":
                 continue
             self.replaceMedia(image)
@@ -214,7 +215,7 @@ class htmlLocalizer:
         found in the media directory 
         """
 
-        downloadedMedia = os.listdir(os.path.join(self.directory, "media/"))
+        downloadedMedia = os.listdir(os.path.join(self.getDirectory, "media/"))
         mediaLink = ""
         if(media.has_attr('href')):
             mediaLink = media.attrs.get("href")
@@ -251,10 +252,10 @@ class htmlLocalizer:
         This method is used to replace the URLS of all background images on the locally downloaded static html 
         with the downloaded background images in the media directory
         """
-        downloadedMedia = os.listdir(self.directory+"/media/")
+        downloadedMedia = os.listdir(self.getDirectory+"/media/")
 
         elementsToReplace = []
-        for element in self.htmlSoup.find_all(style=True):
+        for element in self.getHtmlSoup().find_all(style=True):
             if(element["style"]).find("background-image: url") > -1:
                 elementsToReplace.append(element)
 
@@ -284,7 +285,7 @@ class htmlLocalizer:
         This method is used to replace the URLS of all images on the locally downloaded static html (where the image is stored in a href/hyperlink)
         with the downloaded background images in the media directory
         """
-        for element in self.htmlSoup.find_all(href=True):
+        for element in self.getHtmlSoup().find_all(href=True):
             href = element["href"]
             if ".png" in href or ".jpg" in href or ".jpeg" in href or ".gif" in href or ".JPEG" in href or ".svg" in href:
                 self.replaceMedia(element)
@@ -296,7 +297,7 @@ class htmlLocalizer:
         This method is used to replace the URLS of all audio and video files on the locally downloaded static html
         with the associated downloaded local files in the media directory
         """
-        for audioVideo in self.htmlSoup.find_all('source', type=['video/mp4', 'video/ogg', 'video/webm', 'audio/ogg', 'audio/mpeg']):
+        for audioVideo in self.getHtmlSoup().find_all('source', type=['video/mp4', 'video/ogg', 'video/webm', 'audio/ogg', 'audio/mpeg']):
             self.replaceMedia(audioVideo)
 
 
@@ -305,7 +306,7 @@ class htmlLocalizer:
         """
         This method is intended to remove all login boxes, search items and other non-static elements by removing forms from web pages
         """
-        for form in self.htmlSoup.find_all("form"):
+        for form in self.getHtmlSoup().find_all("form"):
             form.replaceWith('')
 
     def getAllMediaLists(self):
@@ -325,10 +326,44 @@ class htmlLocalizer:
         """
         Method makes use of all replace 'media' methods for cleaner code. 
         """
-        pathname = os.path.join(self.directory, "media/")
+        pathname = os.path.join(self.getDirectory, "media/")
         os.makedirs(pathname, exist_ok=True)
 
         self.replaceImg()
         self.replaceBgImages()
         self.replaceHrefImages()
         self.replaceAudioVideos()
+    
+    def getHtmlSoup(self):
+        """
+        Returns the html beautiful soup object linked to the 
+        instances html object
+        """
+        return self.htmlFile.htmlSoup
+    
+    def getHtmlFile(self):
+        """
+        Returns the object HTML file object that contains
+        information about the file being processed such as
+        it's directory and the html soup object
+        """
+        return self.htmlFile
+    
+    def getDirectory(self):
+        return self.htmlFile.localDirectory
+    
+
+class htmlFile:
+
+    def __init__(self, response, htmlLocalizer):
+        self.htmlLocalizer = htmlLocalizer
+        self.remoteDirectory = self.htmlLocalizer.url
+        self.localDirectory = self.remoteDirectory[7:] 
+        self.newFilename = self.setFilename()
+        self.htmlSoup = bSoup(response.content, "html.parser")
+
+    def setFilename(self):
+        url = self.remoteDirectory
+        currentDateTime = datetime.now().strftime(
+            "%m/%d/%Y-%H:%M:%S").replace('/', '-')
+        return os.path.join(self.localDirectory, url[url.rfind("/")+1:] + currentDateTime+".html")

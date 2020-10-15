@@ -86,28 +86,41 @@ class webScraper():
         print(f'Starting recursive download on {url} ...')
         
         try:
+            
             url = self.formatUrl(url)
             response = requests.Session().get(url, headers=self.headers)
             htmlLocalize = htmlLocalizer(url, response)
-  
-            self.processedUrls.append(self.formatUrl(url))
-            self.downloadWebPage(htmlLocalize)
-            
+
+            if(url not in self.processedUrls):
+                self.processedUrls.append(self.formatUrl(url))
+
+            currentPages=[]
             for anchorTag in htmlLocalize.getHtmlSoup().find_all("a", href=True):
                 currentUrl = self.formatUrl(anchorTag['href'])
                 formattedBasePath = self.formatUrl(self.basePath)
 
                 # If it is explicitely referring to a local page or has a relative path
                 if formattedBasePath in currentUrl or currentUrl.startswith('/'):
-                    ignoreUrl = self.shouldIgnoreUrl(currentUrl, pathsToIgnore)
                     #confirm we haven't processed the url, it's not in the queue to be processed and we shouldn't ignore it
-                    if (not ignoreUrl) & (not((currentUrl in self.processedUrls))):
-                        self.processedUrls.append(self.formatUrl(url))
-                        self.downloadAllWebPages(currentUrl)
-                        
-                        newDirectory = currentUrl[currentUrl.rfind("/")+1:]
-                        anchorTag['href'] = newDirectory+"/"+newDirectory+".html"
-                        print(f'It is now {anchorTag["href"]} ')
+                    if (not((currentUrl in self.processedUrls))):
+                        ignoreUrl = self.shouldIgnoreUrl(currentUrl, pathsToIgnore)
+                        if (not ignoreUrl):
+                            self.processedUrls.append(self.formatUrl(currentUrl))
+                            currentPages.append(self.formatUrl(currentUrl))
+                            self.replaceHrefWithLocalPath(currentUrl,anchorTag)
+
+                    else:
+                        ignoreUrl = self.shouldIgnoreUrl(currentUrl, pathsToIgnore)
+                        if (not ignoreUrl):
+                            self.replaceHrefWithLocalPath(currentUrl,anchorTag)
+
+
+            self.downloadWebPage(htmlLocalize)
+
+            for webpageUrl in currentPages:
+                self.downloadAllWebPages(webpageUrl)
+
+
 
                         
         except(requests.exceptions.MissingSchema, requests.exceptions.ConnectionError, requests.exceptions.InvalidURL, requests.exceptions.InvalidSchema):
@@ -136,6 +149,17 @@ class webScraper():
         if not(isAcceptable):
             return True
         return False
+
+    
+    def replaceHrefWithLocalPath(self, currentUrl, anchorTag):
+
+        newDirectory = currentUrl[currentUrl.rfind("/")+1:]
+
+        if(currentUrl==self.basePath):
+            anchorTag['href'] = "/"+newDirectory+"/"+newDirectory+".html"
+        else:
+            anchorTag['href'] = newDirectory+"/"+newDirectory+".html"
+
     
                                     
     def formatUrl(self, url):

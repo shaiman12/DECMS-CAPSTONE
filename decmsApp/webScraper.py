@@ -30,6 +30,7 @@ class webScraper():
         self.processedUrls = []
         self.brokenUrls = set()
         self.rootDirectory = self.basePath[7:]
+        self.ignoredPages=[]
 
 
     def downloadWebPage(self, htmlLocalizer):
@@ -94,7 +95,7 @@ class webScraper():
             if(url not in self.processedUrls):
                 self.processedUrls.append(self.formatUrl(url))
 
-            currentPages=[]
+            
             for anchorTag in htmlLocalize.getHtmlSoup().find_all("a", href=True):
                 currentUrl = self.formatUrl(anchorTag['href'])
                 formattedBasePath = self.formatUrl(self.basePath)
@@ -106,21 +107,17 @@ class webScraper():
                         ignoreUrl = self.shouldIgnoreUrl(currentUrl, pathsToIgnore)
                         if (not ignoreUrl):
                             self.processedUrls.append(self.formatUrl(currentUrl))
-                            currentPages.append(self.formatUrl(currentUrl))
                             self.replaceHrefWithLocalPath(currentUrl,anchorTag)
-
+                            self.downloadAllWebPages(currentUrl)
+                        else:
+                            self.ignoredPages.append(self.formatUrl(currentUrl))
+                            self.processedUrls.append(self.formatUrl(currentUrl))
                     else:
-                        ignoreUrl = self.shouldIgnoreUrl(currentUrl, pathsToIgnore)
-                        if (not ignoreUrl):
+                        if(not(currentUrl in self.ignoredPages)):
                             self.replaceHrefWithLocalPath(currentUrl,anchorTag)
 
 
             self.downloadWebPage(htmlLocalize)
-
-            for webpageUrl in currentPages:
-                self.downloadAllWebPages(webpageUrl)
-
-
 
                         
         except(requests.exceptions.MissingSchema, requests.exceptions.ConnectionError, requests.exceptions.InvalidURL, requests.exceptions.InvalidSchema):
@@ -153,12 +150,14 @@ class webScraper():
     
     def replaceHrefWithLocalPath(self, currentUrl, anchorTag):
 
-        newDirectory = currentUrl[currentUrl.rfind("/")+1:]
+        futureFileName = currentUrl[currentUrl.rfind("/")+1:]
+        completePath = currentUrl[len(self.basePath):]
 
         if(currentUrl==self.basePath):
-            anchorTag['href'] = "/"+newDirectory+"/"+newDirectory+".html"
+            anchorTag['href'] = "/"+futureFileName+"/"+futureFileName+".html"
         else:
-            anchorTag['href'] = newDirectory+"/"+newDirectory+".html"
+            anchorTag['href'] =  os.path.join(completePath, futureFileName+".html")
+        
 
     
                                     

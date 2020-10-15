@@ -111,19 +111,13 @@ class webScraper():
                             self.downloadAllWebPages(currentUrl)
                         else:
                             self.ignoredPages.append(self.formatUrl(currentUrl))
-
+                            self.processedUrls.append(self.formatUrl(currentUrl))
                     else:
                         if(not(currentUrl in self.ignoredPages)):
                             self.replaceHrefWithLocalPath(currentUrl,anchorTag)
 
 
             self.downloadWebPage(htmlLocalize)
-            """
-            for webpageUrl in currentPages:
-                self.downloadAllWebPages(webpageUrl)
-            """
-
-
 
                         
         except(requests.exceptions.MissingSchema, requests.exceptions.ConnectionError, requests.exceptions.InvalidURL, requests.exceptions.InvalidSchema):
@@ -156,12 +150,14 @@ class webScraper():
     
     def replaceHrefWithLocalPath(self, currentUrl, anchorTag):
 
-        newDirectory = currentUrl[currentUrl.rfind("/")+1:]
+        futureFileName = currentUrl[currentUrl.rfind("/")+1:]
+        completePath = currentUrl[len(self.basePath):]
 
         if(currentUrl==self.basePath):
-            anchorTag['href'] = "/"+newDirectory+"/"+newDirectory+".html"
+            anchorTag['href'] = "/"+futureFileName+"/"+futureFileName+".html"
         else:
-            anchorTag['href'] = newDirectory+"/"+newDirectory+".html"
+            anchorTag['href'] =  os.path.join(completePath, futureFileName+".html")
+        
 
     
                                     

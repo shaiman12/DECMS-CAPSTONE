@@ -177,3 +177,4 @@ class webScraper():
             formattedUrl = 'http://'+formattedUrl
         return formattedUrl
 
+    

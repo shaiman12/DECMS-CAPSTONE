@@ -26,6 +26,21 @@ class htmlLocalizer:
         self.htmlFile = htmlFile(response ,self)
         self.headers = {'User-Agent': '...', 'referer': 'https://...'}
 
+    def __init__(self, url):
+        """
+        Constructor class. Variables url - the passed in url. imageLinkList - list to contain the filenames of all downloaded images needed for 
+        inline editing. hmtlSoup - the html soup for the html file. directory - the directory needed for saving items. headers - headers needed for the get 
+        requests.  
+        """
+        
+        self.headers = {'User-Agent': '...', 'referer': 'https://...'}
+        self.url = url
+        self.imagelinklist = []
+        response = requests.Session().get(url, headers=self.headers)
+
+        self.htmlFile = htmlFile(response ,self)
+    
+
     def getAndReplaceCSS(self):
         """
          Returns 2xN array with the css url and its pair new file name as its contents 
@@ -144,8 +159,11 @@ class htmlLocalizer:
         audioVideoLinks = []
         print('Getting list of videos...')
 
-        for audioVideo in self.getHtmlSoup().find_all('source', type=['video/ogg', 'video/mp4', 'video/webm', 'audio/ogg', 'audio/mpeg']):
+        for audioVideo in self.getHtmlSoup().find_all('source', type=['video/ogg', 'video/mp4', 'video/webm', 'audio/ogg', 'audio/mpeg','audio/mp4']):
             audioVideoLinks.append(self.linkMaker(audioVideo))
+
+        for audio in self.getHtmlSoup().find_all('audio'):
+            audioVideoLinks.append(self.linkMaker(audio))
 
         return audioVideoLinks
 
@@ -300,6 +318,8 @@ class htmlLocalizer:
         """
         for audioVideo in self.getHtmlSoup().find_all('source', type=['video/mp4', 'video/ogg', 'video/webm', 'audio/ogg', 'audio/mpeg']):
             self.replaceMedia(audioVideo)
+        for audio in self.getHtmlSoup().find_all('audio'):
+            self.replaceMedia(audio)
 
 
 

@@ -5,6 +5,7 @@ import io
 import os
 import shutil
 from decmsApp.webScraper import webScraper
+from decmsApp.htmlLocalizer import htmlLocalizer
 from decmsApp.websiteValidator import *
 import traceback
 
@@ -74,7 +75,8 @@ def scrape():
 
         else:
             url = scraper.formatUrl(url)
-            scraper.downloadWebPage(url)
+            
+            scraper.downloadWebPage(htmlLocalizer(url))
             flash(f'Successfully downloaded: {url}', 'success')
             return redirect(url_for('success',directory=scraper.rootDirectory))
 

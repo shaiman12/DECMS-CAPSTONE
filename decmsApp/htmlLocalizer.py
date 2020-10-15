@@ -127,9 +127,8 @@ class htmlLocalizer:
         links = []
         styles = []
         for element in self.getHtmlSoup().find_all(style=True):
-            if( "background-image" in element["style"]) > -1:
+            if(element["style"]).find("background-image: url") > -1:
                 styles.append(element["style"])
-
         for style in styles:
             start = style.find("url(")+4
             end = style.find(")")

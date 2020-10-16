@@ -127,7 +127,7 @@ class webScraper():
             print(url)
             
     
-    def shouldIgnoreUrl(self, url, pathsToIgnore, acceptableType="text/html"):
+    def shouldIgnoreUrl(self, url, pathsToIgnore=['cdn-cgi'], acceptableType="text/html"):
         """
         Checks if a url should be ignored according to whether it;
         A) contains any paths to ignore, or 
@@ -139,6 +139,8 @@ class webScraper():
 
         #check for on-page links that use ids
         if url[url.rfind('/')+1:].startswith('#'):
+            return True
+        if "mailto:" in url.replace(" ","").lower() or "tel:" in url.replace(" ","").lower():
             return True
         response = requests.Session().get(url, headers=self.headers)
         contentType = response.headers["content-type"]

@@ -4,7 +4,7 @@ from decmsApp.webScraper import *
 class TestWebsiteValidator(unittest.TestCase):
 
     def test_isUrlValid(self):
-
+        print('Testing if urls are valid or not - this may take a while...')
         #invalid url
         offlineSite = "http://sdjvhjdsa.com/"
         result = websiteValidator(offlineSite).isUrlValid()
@@ -26,6 +26,7 @@ class TestWebsiteValidator(unittest.TestCase):
         self.assertTrue(result)
 
     def test_isWordPressSite(self):
+        print('Testing if urls are wordpress sites or not - this may take a while...')
 
         #other url
         otherSite = "https://shawpremierbrands.co.za/"
@@ -48,6 +49,7 @@ class TestWebsiteValidator(unittest.TestCase):
         self.assertTrue(result)
 
     def test_DrupalSite(self):
+        print('Testing if urls are drupal sites or not - this may take a while...')
 
         #other url
         otherSite = "https://techcrunch.com/"

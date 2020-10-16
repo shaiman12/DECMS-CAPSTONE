@@ -200,7 +200,6 @@ class htmlLocalizer:
         
         filename = os.path.join(
             directory, "media/"+mediaUrl.split("/")[-1])
-        print("TRYING TO MAKE FILENAME ", filename)
         os.makedirs(os.path.dirname(filename), exist_ok=True)
 
         mediaContent = requests.get(

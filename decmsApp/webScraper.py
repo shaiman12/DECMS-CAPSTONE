@@ -141,11 +141,15 @@ class webScraper():
         if url[url.rfind('/')+1:].startswith('#'):
             return True
         response = requests.Session().get(url, headers=self.headers)
-        contentType = response.headers["content-type"]
-        isAcceptable = acceptableType in contentType
-        if not(isAcceptable):
-            return True
-        return False
+        try:
+            contentType = response.headers["content-type"]
+            isAcceptable = acceptableType in contentType
+            if not(isAcceptable):
+                return True
+            return False
+        except Exception as e:
+            print("HTML headers did not contain a content-type")
+        
 
     
     def replaceHrefWithLocalPath(self, currentUrl, anchorTag):
@@ -154,7 +158,7 @@ class webScraper():
         completePath = currentUrl[len(self.basePath):]
 
         if(currentUrl==self.basePath):
-            anchorTag['href'] = "/"+futureFileName+"/"+futureFileName+".html"
+            anchorTag['href'] = "/"+futureFileName+".html"
         else:
             anchorTag['href'] =  os.path.join(completePath, futureFileName+".html")
         

@@ -99,10 +99,10 @@ class htmlLocalizer:
 
         print('Getting list of images...')
         for image in self.getHtmlSoup().find_all("img"):
-            if(self.linkMaker(image) == ""):
+            if(self.extractLink(image) == ""):
                 continue
             else:
-                links.append(self.linkMaker(image))
+                links.append(self.extractLink(image))
 
         return links
 
@@ -137,7 +137,7 @@ class htmlLocalizer:
                 links.append(element)
         newLinks = []
         for link in links:
-            newLinks.append(self.linkMaker(link))
+            newLinks.append(self.extractLink(link))
         return newLinks
 
     def getAudioVideolist(self):
@@ -149,16 +149,16 @@ class htmlLocalizer:
         print('Getting list of videos...')
 
         for audioVideo in self.getHtmlSoup().find_all('source', type=['video/ogg', 'video/mp4', 'video/webm', 'audio/ogg', 'audio/mpeg','audio/mp4']):
-            audioVideoLinks.append(self.linkMaker(audioVideo))
+            audioVideoLinks.append(self.extractLink(audioVideo))
 
         for audio in self.getHtmlSoup().find_all('audio'):
-            audioVideoLinks.append(self.linkMaker(audio))
+            audioVideoLinks.append(self.extractLink(audio))
 
         return audioVideoLinks
 
 # Formats a link into correct form for downloading
 
-    def linkMaker(self, mediaItem):
+    def extractLink(self, mediaItem):
         """ 
         This method receives a media item beautiful soup object that represents the content within a tag
         The method processes the element to extract the link to the desired media in the correct form.
@@ -188,13 +188,18 @@ class htmlLocalizer:
         return mediaurl
 
 
-    def downloadMedia(self, mediaUrl):
+    def downloadMedia(self, mediaUrl, customDirectory=False):
         """ 
         This method is used to download a media file. It receives a URL to the desired media file. The media file is then saved to the 
         media directory
         """
+
+        if not customDirectory: 
+            directory = self.getDirectory()
+        else: directory = customDirectory
+        
         filename = os.path.join(
-            self.getDirectory(), "media/"+mediaUrl.split("/")[-1])
+            directory, "media/"+mediaUrl.split("/")[-1])
         os.makedirs(os.path.dirname(filename), exist_ok=True)
 
         mediaContent = requests.get(
@@ -222,7 +227,6 @@ class htmlLocalizer:
         found in the media directory 
         """
 
-        downloadedMedia = os.listdir(os.path.join(self.getDirectory(), "media/"))
         mediaLink = ""
         if(media.has_attr('href')):
             mediaLink = media.attrs.get("href")
@@ -245,14 +249,16 @@ class htmlLocalizer:
         filename, file_ext = os.path.splitext(
             os.path.basename(dissasembled.path))
         mediaPart = filename+file_ext
+        
         try:
+            downloadedMedia = os.listdir(os.path.join(self.getDirectory(), "media/"))
             pos = downloadedMedia.index(mediaPart)
             if(pos > -1):
                 media[attType] = "media/"+downloadedMedia[pos]
 
+
         except Exception as e:
-            print("____________________________ Failed replacing image _______________________", mediaPart)
-            print(e)
+            print('')
 
     def replaceBgImages(self):
         """ 

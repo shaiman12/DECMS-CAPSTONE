@@ -368,10 +368,16 @@ class htmlFile:
     def __init__(self, response, htmlLocalizer):
         self.htmlLocalizer = htmlLocalizer
         self.remoteDirectory = self.htmlLocalizer.url
-        self.localDirectory = self.remoteDirectory[7:] 
+        if(len(self.remoteDirectory) < 250):
+            self.localDirectory = self.remoteDirectory[7:] 
+        else:
+            self.localDirectory = self.remoteDirectory[7:120] 
         self.newFilename = self.setFilename()
         self.htmlSoup = bSoup(response.content, "html.parser")
 
     def setFilename(self):
         url = self.remoteDirectory
-        return os.path.join(self.localDirectory, url[url.rfind("/")+1:]+".html")
+        fileName = os.path.join(self.localDirectory, url[url.rfind("/")+1:]+".html")
+        if(len(fileName) > 255):
+            fileName = fileName[:130] + ".html"
+        return fileName

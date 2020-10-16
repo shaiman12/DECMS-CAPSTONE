@@ -12,7 +12,7 @@ class TestHTMLLocalizer(unittest.TestCase):
     def test_getCorrectNumberOfLinks(self):
         url='https://www.dadoagency.com/'
         response = requests.Session().get(url, headers={'User-Agent': '...', 'referer': 'https://...'})
-        localizer = htmlLocalizer(url,response)
+        localizer = htmlLocalizer(url)
         cssLinks=localizer.getAndReplaceCSS()
         self.assertEqual(len(cssLinks),1)
         bgLinks=localizer.getBgImageList()
@@ -35,35 +35,6 @@ class TestHTMLLocalizer(unittest.TestCase):
         self.assertEqual(len(jsLinks),2)
         audioLinks=localizer.getAudioVideolist()
         self.assertEqual(len(audioLinks),0)
-
-
-
-
-    # def test_downloadMedia(self):
-    #     url='https://woocommerce-343891-1062302.cloudwaysapps.com/coming-soon/'
-    #     htmlSoup = bSoup(requests.Session().get(url, headers={'User-Agent': '...', 'referer': 'https://...'}).content, "html.parser")
-    #     localizer = htmlLocalizer(url,htmlSoup)
-
-    #     for mediaItem in self.randomMedia:
-    #         localizer.downloadMedia(mediaItem, "test-media/")
-        
-    #     downloadedMedia = os.listdir("test-media/")
-    #     self.assertEqual(len(self.randomMedia), len(downloadedMedia))
-    #     shutil.rmtree("test-media/")
-
-
-    # def test_replaceImg(self):
-    #     url='https://wordpress-343891-1520087.cloudwaysapps.com/other'
-    #     htmlSoup = bSoup(requests.Session().get(url, headers={'User-Agent': '...', 'referer': 'https://...'}).content, "html.parser")
-    #     localizer = htmlLocalizer(url,htmlSoup)
-    #     imagesBefore = localizer.getImageList()
-    #     localizer.replaceImg()
-    #     imagesAfter = localizer.getImageList()
-    #     print(f'Before: {imagesBefore}')
-    #     print(f'After: {imagesAfter}')
-
-
-
 
         
 

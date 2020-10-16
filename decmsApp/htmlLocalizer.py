@@ -227,7 +227,6 @@ class htmlLocalizer:
         found in the media directory 
         """
 
-        downloadedMedia = os.listdir(os.path.join(self.getDirectory(), "media/"))
         mediaLink = ""
         if(media.has_attr('href')):
             mediaLink = media.attrs.get("href")
@@ -250,14 +249,16 @@ class htmlLocalizer:
         filename, file_ext = os.path.splitext(
             os.path.basename(dissasembled.path))
         mediaPart = filename+file_ext
+        
         try:
+            downloadedMedia = os.listdir(os.path.join(self.getDirectory(), "media/"))
             pos = downloadedMedia.index(mediaPart)
             if(pos > -1):
                 media[attType] = "media/"+downloadedMedia[pos]
 
+
         except Exception as e:
-            print("____________________________ Failed replacing image _______________________", mediaPart)
-            print(e)
+            print('')
 
     def replaceBgImages(self):
         """ 

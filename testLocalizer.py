@@ -59,3 +59,18 @@ class TestHTMLLocalizer(unittest.TestCase):
         downloadedMedia = os.listdir("test-media/media")
         self.assertEqual(len(downloadedMedia),len(randomMedia))
         shutil.rmtree("test-media/")
+
+    def test_removeForms(self):
+        url='https://dadoagency.com'
+        localizer = htmlLocalizer(url)
+        localizer.removeForms()
+        forms = localizer.getHtmlSoup().find_all("form")
+        self.assertEqual(len(forms),0)
+        
+
+        url='https://obama.org'
+        localizer = htmlLocalizer(url)
+        localizer.removeForms()
+        forms = localizer.getHtmlSoup().find_all("form")
+        self.assertEqual(len(forms),0)
+

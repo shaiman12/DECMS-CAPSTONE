@@ -154,12 +154,9 @@ class webScraper():
         completePath = currentUrl[len(self.basePath):]
 
         if(currentUrl==self.basePath):
-            anchorTag['href'] = "/"+futureFileName+"/"+futureFileName+".html"
+            anchorTag['href'] = "/"+futureFileName+".html"
         else:
             anchorTag['href'] =  os.path.join(completePath, futureFileName+".html")
-        
-
-    
                                     
     def formatUrl(self, url):
         """

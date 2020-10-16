@@ -75,7 +75,7 @@ def scrape():
 
         else:
             url = scraper.formatUrl(url)
-            
+
             scraper.downloadWebPage(htmlLocalizer(url))
             flash(f'Successfully downloaded: {url}', 'success')
             return redirect(url_for('success',directory=scraper.rootDirectory))
@@ -115,18 +115,6 @@ def request_zip():
     return send_from_directory('./',filePath+".zip", as_attachment=True)
 
 
-@app.route('/delete-directory', methods=["GET", "POST"])
-
-def delete_directory():
-    """
-    This endpoint expects a directory as a query param
-    it then deletes the entire directory and its contents
-    """
-    directory = request.args.get('directory')
-    path = "./"+directory
-    shutil.rmtree(path, ignore_errors=True)
-    flash(f'Successfully deleted the local snapshot of: {directory}', 'success')
-    return redirect(url_for('home'))
 
 
 if __name__ == '__main__':
